@@ -2,15 +2,17 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Plan Académico — Lucía</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Tracker — Lucía</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%235B9BD5'/><stop offset='100%25' stop-color='%238B6AD9'/></linearGradient></defs><rect width='100' height='100' rx='20' fill='url(%23g)'/><text y='68' x='50' text-anchor='middle' font-size='55' font-family='system-ui' font-weight='bold' fill='white'>ST</text></svg>" />
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; background:#faf9f7; color:#1a1a1a; }
-  ::-webkit-scrollbar { width:4px; height:4px; }
-  ::-webkit-scrollbar-thumb { background:rgba(0,0,0,.12); border-radius:4px; }
-  button { font-family:inherit; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; overflow: hidden; }
+  #root { height: 100vh; }
+  select option { font-family: inherit; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 3px; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -19,433 +21,1141 @@
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect, useRef, useMemo, useCallback } = React;
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
-const SUB = {
-  delitos:    { label:"Delitos de Corrupción", color:"#e74c3c", bg:"#fdecea", icon:"⚖️" },
-  vocacion:   { label:"Vocación Judicial",     color:"#27ae60", bg:"#e8f8ef", icon:"🏛️" },
-  concursos:  { label:"Concursos Comercial",   color:"#f39c12", bg:"#fef5e7", icon:"📋" },
-  etica:      { label:"Ética Profesional",     color:"#2980b9", bg:"#ebf5fb", icon:"📘" },
-  admin:      { label:"Derecho Administrativo",color:"#8e44ad", bg:"#f4ecf7", icon:"📑" },
-  selfcare:   { label:"Self-care / Yoga",      color:"#e84393", bg:"#fce4ec", icon:"🌸" },
-  clase:      { label:"Clase",                 color:"#7f8c8d", bg:"#f2f3f4", icon:"🎓" },
-  transporte: { label:"Transporte",            color:"#95a5a6", bg:"#f2f4f4", icon:"🚌" },
-  evento:     { label:"Evento",                color:"#e67e22", bg:"#fef0e4", icon:"📌" },
+// ==================== CONSTANTS ====================
+const SUBJECTS = {
+  etica: { name: "Ética profesional", color: "#5B9BD5", lightColor: "rgba(91,155,213,0.08)", gradient: "linear-gradient(135deg, #5B9BD5, #7BC0F7)" },
+  contratos: { name: "Contratos mercantiles", color: "#D4A73A", lightColor: "rgba(212,167,58,0.08)", gradient: "linear-gradient(135deg, #D4A73A, #F0CC5B)" },
+  mineria: { name: "Derecho de minería", color: "#A07840", lightColor: "rgba(160,120,64,0.08)", gradient: "linear-gradient(135deg, #A07840, #C49A5C)" },
+  delitos: { name: "Delitos de corrupción", color: "#D96A6A", lightColor: "rgba(217,106,106,0.08)", gradient: "linear-gradient(135deg, #D96A6A, #F09090)" },
+  teatro: { name: "Diálogo teatral", color: "#D97AAF", lightColor: "rgba(217,122,175,0.08)", gradient: "linear-gradient(135deg, #D97AAF, #F0A0CC)" },
+  vocacion: { name: "Vocación judicial", color: "#5BAF6A", lightColor: "rgba(91,175,106,0.08)", gradient: "linear-gradient(135deg, #5BAF6A, #7DD08E)" },
+  debates: { name: "Debates constitucionales", color: "#8B6AD9", lightColor: "rgba(139,106,217,0.08)", gradient: "linear-gradient(135deg, #8B6AD9, #B090F0)" },
 };
 
-const DAYS = [
-{date:"2026-03-20",wd:"Viernes",label:"20 mar",blocks:[
-{s:"15:15",e:"17:00",sub:"selfcare",t:"Siesta",icon:"💤"},
-{s:"17:00",e:"17:15",sub:"selfcare",t:"Despertar, agua",icon:"💧"},
-{s:"17:15",e:"17:45",sub:"selfcare",t:"Yoga — espalda, cuello",icon:"🧘"},
-{s:"17:45",e:"18:00",sub:"selfcare",t:"Snack, té",icon:"☕"},
-{s:"18:00",e:"19:00",sub:"concursos",t:"C-L1 calentar (~8p)",icon:"📋"},
-{s:"19:00",e:"21:30",sub:"concursos",t:"C-L1 terminar (12p)",icon:"📋",peak:true},
-{s:"21:30",e:"22:00",sub:"selfcare",t:"Break, preparar cena",icon:"🍃"},
-{s:"22:00",e:"22:30",sub:"selfcare",t:"Cena",icon:"🍽️"},
-{s:"22:30",e:"01:00",sub:"delitos",t:"D-L7 — primeras 10-12p",icon:"⚖️"},
-{s:"01:00",e:"02:00",sub:"delitos",t:"D-L7 si hay energía (~3-5p)",icon:"⚖️"},
-{s:"02:00",e:"02:30",sub:"selfcare",t:"Skincare, wind-down",icon:"🌙"},
-],sum:"C-L1 ✓ (20p) | D-L7 avanzar 10-15p",alerts:["📋 Terminar C-L1 (20p) + empezar D-L7"]},
+const DEFAULT_SCHEDULE = {
+  Lunes: [{ subject: "etica", start: "11:00", end: "12:10", room: "D402", professor: "Pávez" }],
+  Martes: [
+    { subject: "contratos", start: "8:20", end: "9:30", room: "FCAP", professor: "Goldenberg" },
+    { subject: "delitos", start: "9:40", end: "10:50", room: "FD-101", professor: "Navarrete" },
+    { subject: "teatro", start: "11:00", end: "13:30", room: "PLIRA", professor: "Lasen" },
+  ],
+  Miércoles: [
+    { subject: "contratos", start: "12:20", end: "13:30", room: "FCAP", professor: "Goldenberg" },
+    { subject: "vocacion", start: "14:50", end: "17:20", room: "A_301", professor: "Ravanales" },
+  ],
+  Jueves: [
+    { subject: "contratos", start: "8:20", end: "9:30", room: "FCAP", professor: "Goldenberg" },
+    { subject: "delitos", start: "9:40", end: "10:50", room: "FD-101", professor: "Navarrete" },
+  ],
+  Viernes: [],
+};
 
-{date:"2026-03-21",wd:"Sábado",label:"21 mar",blocks:[
-{s:"02:30",e:"06:45",sub:"selfcare",t:"Dormir (~4h 15min)",icon:"💤"},
-{s:"06:45",e:"07:30",sub:"selfcare",t:"Despertar, desayuno",icon:"☀️"},
-{s:"07:30",e:"10:00",sub:"selfcare",t:"Pilates",icon:"🧘"},
-{s:"10:00",e:"10:30",sub:"selfcare",t:"Volver, snack",icon:"🥤"},
-{s:"10:30",e:"11:30",sub:"selfcare",t:"Siesta (1h)",icon:"💤"},
-{s:"11:30",e:"12:00",sub:"selfcare",t:"Ducha, almuerzo ligero",icon:"🍽️"},
-{s:"12:00",e:"14:30",sub:"concursos",t:"C-L2 (23p)",icon:"📋"},
-{s:"14:30",e:"15:00",sub:"selfcare",t:"Break, snack",icon:"🍃"},
-{s:"15:00",e:"15:30",sub:"concursos",t:"C-L5 (3p) — cerrarla",icon:"📋"},
-{s:"15:30",e:"16:00",sub:"selfcare",t:"Estiramientos (20 min)",icon:"🧘"},
-{s:"16:00",e:"17:00",sub:"concursos",t:"Repaso notas C-L1+L2",icon:"📋"},
-{s:"17:00",e:"18:30",sub:"vocacion",t:"Vocación: primera lectura (~6p)",icon:"🏛️",peak:true},
-{s:"18:30",e:"19:30",sub:"selfcare",t:"Descanso, arreglarse",icon:"✨"},
-{s:"19:30",e:"20:00",sub:"selfcare",t:"Traslado cumpleaños",icon:"🚌"},
-{s:"20:00",e:"02:00",sub:"selfcare",t:"Cumpleaños — disfrútalo",icon:"🎂"},
-],sum:"C-L2 ✓ | C-L5 ✓ | Vocación inicio (~6p)",alerts:["🎂 Cumpleaños 20:00","🏛️ Vocación empieza HOY"]},
-
-{date:"2026-03-22",wd:"Domingo",label:"22 mar",blocks:[
-{s:"02:30",e:"11:00",sub:"selfcare",t:"Dormir largo (~8.5h)",icon:"💤"},
-{s:"11:00",e:"11:30",sub:"selfcare",t:"Despertar, desayuno",icon:"☀️"},
-{s:"11:30",e:"12:00",sub:"selfcare",t:"Yoga (30 min)",icon:"🧘"},
-{s:"12:00",e:"14:15",sub:"concursos",t:"C-L3 (21p)",icon:"📋"},
-{s:"14:15",e:"14:45",sub:"selfcare",t:"Almuerzo",icon:"🍽️"},
-{s:"14:45",e:"17:00",sub:"concursos",t:"C-L4 (18p)",icon:"📋"},
-{s:"17:00",e:"17:30",sub:"selfcare",t:"Break: caminar, snack",icon:"🍃"},
-{s:"17:30",e:"18:00",sub:"delitos",t:"D-L7 terminar (~8p)",icon:"⚖️"},
-{s:"18:00",e:"19:00",sub:"etica",t:"Ética lectura ~6p",icon:"📘"},
-{s:"19:00",e:"21:30",sub:"vocacion",t:"Vocación lectura (~8p)",icon:"🏛️",peak:true},
-{s:"21:30",e:"22:00",sub:"selfcare",t:"Break",icon:"🍃"},
-{s:"22:00",e:"22:30",sub:"selfcare",t:"Cena",icon:"🍽️"},
-{s:"22:30",e:"01:00",sub:"concursos",t:"Materia de clases (~8p)",icon:"📋"},
-{s:"01:00",e:"01:30",sub:"selfcare",t:"Wind-down",icon:"🌙"},
-],sum:"🔥 EXPRESS: C-L3 ✓ | C-L4 ✓ | D-L7 ✓ | Ética ✓ | Vocación +8p",alerts:["🔥 EXPRESS ~55p","⚠️ Mañana Corte 7AM"]},
-
-{date:"2026-03-23",wd:"Lunes",label:"23 mar",blocks:[
-{s:"01:30",e:"06:15",sub:"selfcare",t:"Dormir (~4h 45min)",icon:"💤"},
-{s:"06:15",e:"07:00",sub:"selfcare",t:"Despertar, desayuno, modafinil",icon:"☀️"},
-{s:"07:00",e:"08:00",sub:"transporte",t:"Traslado a Corte Suprema",icon:"🚌"},
-{s:"08:00",e:"12:00",sub:"vocacion",t:"Visita Corte Suprema",icon:"🏛️"},
-{s:"12:00",e:"13:00",sub:"transporte",t:"Vuelta a casa",icon:"🚌"},
-{s:"13:00",e:"13:30",sub:"selfcare",t:"Almuerzo",icon:"🍽️"},
-{s:"13:30",e:"14:30",sub:"selfcare",t:"Siesta (1 hora)",icon:"💤"},
-{s:"14:30",e:"14:45",sub:"selfcare",t:"Despertar, agua",icon:"💧"},
-{s:"14:45",e:"17:00",sub:"concursos",t:"C-L6 primera mitad (~17p)",icon:"📋"},
-{s:"17:00",e:"17:30",sub:"selfcare",t:"Estiramientos (20 min)",icon:"🧘"},
-{s:"17:30",e:"18:15",sub:"concursos",t:"C-L6 continuar (~5p)",icon:"📋"},
-{s:"18:15",e:"18:30",sub:"selfcare",t:"Prepararse pilates",icon:"✨"},
-{s:"18:30",e:"21:00",sub:"selfcare",t:"Pilates",icon:"🧘"},
-{s:"21:00",e:"22:00",sub:"selfcare",t:"Ducha, descanso",icon:"🍃"},
-{s:"22:00",e:"22:30",sub:"selfcare",t:"Cena",icon:"🍽️"},
-{s:"22:30",e:"02:30",sub:"admin",t:"Admin: adaptar PPT + preparar clase",icon:"📑"},
-{s:"02:30",e:"03:00",sub:"selfcare",t:"Wind-down",icon:"🌙"},
-],sum:"C-L6 ~22p | Corte ✓ | Admin PPT preparada",alerts:["🏛️ Corte Suprema 8-12","📑 Admin prep ESTA NOCHE"]},
-
-{date:"2026-03-24",wd:"Martes",label:"24 mar",blocks:[
-{s:"03:00",e:"06:15",sub:"selfcare",t:"Dormir (~3h 15min)",icon:"💤"},
-{s:"06:15",e:"07:00",sub:"selfcare",t:"Despertar, desayuno, modafinil",icon:"☀️"},
-{s:"07:00",e:"08:00",sub:"admin",t:"Bus → repaso cátedra Admin",icon:"📑"},
-{s:"08:00",e:"08:30",sub:"clase",t:"Llegar, prepararse",icon:"🎓"},
-{s:"08:30",e:"13:30",sub:"clase",t:"Clases (Delitos L7 + Admin cátedra)",icon:"🎓"},
-{s:"13:30",e:"15:00",sub:"selfcare",t:"Almuerzo + descanso en uni",icon:"🍽️"},
-{s:"15:00",e:"16:00",sub:"transporte",t:"Bus a casa",icon:"🚌"},
-{s:"16:00",e:"16:45",sub:"selfcare",t:"Siesta (45 min)",icon:"💤"},
-{s:"16:45",e:"17:00",sub:"selfcare",t:"Despertar, agua, snack",icon:"💧"},
-{s:"17:00",e:"17:30",sub:"selfcare",t:"Yoga suave (30 min)",icon:"🧘"},
-{s:"17:30",e:"18:30",sub:"concursos",t:"C-L6 terminar (~12p)",icon:"📋"},
-{s:"18:30",e:"21:30",sub:"concursos",t:"C-L7 (16p) + C-L8 inicio",icon:"📋",peak:true},
-{s:"21:30",e:"22:00",sub:"selfcare",t:"Break",icon:"🍃"},
-{s:"22:00",e:"22:30",sub:"selfcare",t:"Cena",icon:"🍽️"},
-{s:"22:30",e:"01:30",sub:"concursos",t:"C-L8 terminar + Materia (~8p)",icon:"📋"},
-{s:"01:30",e:"02:30",sub:"concursos",t:"Repaso general: esquemas",icon:"📋"},
-{s:"02:30",e:"03:00",sub:"selfcare",t:"Wind-down",icon:"🌙"},
-],sum:"🔥 EXPRESS: Admin ✓ | C-L6 ✓ | C-L7 ✓ | C-L8 ✓ | Materia +8p",alerts:["📑 Cátedra Admin hoy","📋 Mañana CONTROL"]},
-
-{date:"2026-03-25",wd:"Miércoles",label:"25 mar",blocks:[
-{s:"03:00",e:"08:30",sub:"selfcare",t:"Dormir (~5.5h)",icon:"💤"},
-{s:"08:30",e:"09:00",sub:"selfcare",t:"Despertar, desayuno",icon:"☀️"},
-{s:"09:00",e:"09:30",sub:"selfcare",t:"Estiramientos (20 min)",icon:"🧘"},
-{s:"09:30",e:"10:40",sub:"concursos",t:"Bus → materia (~10p) + repaso",icon:"📋"},
-{s:"10:40",e:"12:20",sub:"concursos",t:"Materia (~14p) + repaso pre-control",icon:"📋"},
-{s:"12:20",e:"13:30",sub:"clase",t:"Clases",icon:"🎓"},
-{s:"13:30",e:"14:50",sub:"selfcare",t:"Almuerzo + descanso",icon:"🍽️"},
-{s:"14:50",e:"17:20",sub:"clase",t:"Clases (incl. CONTROL Concursos)",icon:"📋"},
-{s:"17:20",e:"18:00",sub:"selfcare",t:"¡Concursos terminado!",icon:"🎉"},
-{s:"18:00",e:"19:00",sub:"transporte",t:"Bus a casa",icon:"🚌"},
-{s:"19:00",e:"21:30",sub:"delitos",t:"D-L8 (~15p)",icon:"⚖️",peak:true},
-{s:"21:30",e:"22:00",sub:"selfcare",t:"Break",icon:"🍃"},
-{s:"22:00",e:"22:30",sub:"selfcare",t:"Cena",icon:"🍽️"},
-{s:"22:30",e:"01:30",sub:"delitos",t:"D-L8 continuar (~10p)",icon:"⚖️"},
-{s:"01:30",e:"02:00",sub:"selfcare",t:"Wind-down",icon:"🌙"},
-],sum:"📋 CONTROL Concursos ✓ | D-L8 ~25p",alerts:["📋 CONTROL Concursos (5%)","🔄 Pivote a Delitos"]},
-
-{date:"2026-03-26",wd:"Jueves",label:"26 mar",blocks:[
-{s:"02:00",e:"06:15",sub:"selfcare",t:"Dormir (~4h 15min)",icon:"💤"},
-{s:"06:15",e:"07:00",sub:"selfcare",t:"Despertar, desayuno, modafinil",icon:"☀️"},
-{s:"07:00",e:"08:00",sub:"delitos",t:"Bus → repaso D-L8 notas",icon:"⚖️"},
-{s:"08:00",e:"08:30",sub:"clase",t:"Llegar",icon:"🎓"},
-{s:"08:30",e:"11:00",sub:"clase",t:"Clases (Delitos con L8)",icon:"🎓"},
-{s:"11:00",e:"13:00",sub:"delitos",t:"D-L8 terminar + D-L9 inicio (~17p)",icon:"⚖️"},
-{s:"13:00",e:"14:00",sub:"transporte",t:"Bus a casa",icon:"🚌"},
-{s:"14:00",e:"14:30",sub:"selfcare",t:"Almuerzo",icon:"🍽️"},
-{s:"14:30",e:"15:15",sub:"selfcare",t:"Siesta (45 min)",icon:"💤"},
-{s:"15:15",e:"15:30",sub:"selfcare",t:"Estiramientos (15 min)",icon:"🧘"},
-{s:"15:30",e:"18:30",sub:"delitos",t:"D-L9 continuar (~13p)",icon:"⚖️"},
-{s:"18:30",e:"19:00",sub:"selfcare",t:"Break, snack",icon:"🍃"},
-{s:"19:00",e:"21:30",sub:"vocacion",t:"Vocación lectura (~7p)",icon:"🏛️",peak:true},
-{s:"21:30",e:"22:00",sub:"selfcare",t:"Break",icon:"🍃"},
-{s:"22:00",e:"22:30",sub:"selfcare",t:"Cena",icon:"🍽️"},
-{s:"22:30",e:"02:00",sub:"delitos",t:"D-L9 terminar + D-L10 inicio (~15p)",icon:"⚖️"},
-{s:"02:00",e:"02:30",sub:"selfcare",t:"Wind-down",icon:"🌙"},
-],sum:"D-L8 ✓ | D-L9 ✓ | D-L10 ~8p | Vocación +7p",alerts:["⚖️ D-L8 para clase ✓","🏛️ Vocación ~7p"]},
-
-{date:"2026-03-27",wd:"Viernes",label:"27 mar",blocks:[
-{s:"02:30",e:"10:00",sub:"selfcare",t:"Dormir largo (~7.5h)",icon:"💤"},
-{s:"10:00",e:"10:30",sub:"selfcare",t:"Despertar, desayuno",icon:"☀️"},
-{s:"10:30",e:"11:00",sub:"selfcare",t:"Yoga (30 min)",icon:"🧘"},
-{s:"11:00",e:"13:30",sub:"delitos",t:"D-L10 terminar (~24p)",icon:"⚖️"},
-{s:"13:30",e:"14:00",sub:"selfcare",t:"Almuerzo",icon:"🍽️"},
-{s:"14:00",e:"16:30",sub:"delitos",t:"Repaso L1-L5",icon:"⚖️"},
-{s:"16:30",e:"17:00",sub:"selfcare",t:"Break, caminar",icon:"🍃"},
-{s:"17:00",e:"19:00",sub:"delitos",t:"Repaso L6-L8",icon:"⚖️"},
-{s:"19:00",e:"21:30",sub:"vocacion",t:"Vocación lectura (~8p)",icon:"🏛️",peak:true},
-{s:"21:30",e:"22:00",sub:"selfcare",t:"Break",icon:"🍃"},
-{s:"22:00",e:"22:30",sub:"selfcare",t:"Cena",icon:"🍽️"},
-{s:"22:30",e:"01:30",sub:"delitos",t:"Repaso L9-L10 + esquemas",icon:"⚖️"},
-{s:"01:30",e:"02:30",sub:"delitos",t:"Notas generales",icon:"⚖️"},
-{s:"02:30",e:"03:00",sub:"selfcare",t:"Wind-down",icon:"🌙"},
-],sum:"D-L10 ✓ ¡TODAS terminadas! | Primer repaso | Vocación +8p",alerts:["📚 Día libre completo","⚖️ Cerrar L10 + repaso"]},
-
-{date:"2026-03-28",wd:"Sábado",label:"28 mar",blocks:[
-{s:"03:00",e:"06:45",sub:"selfcare",t:"Dormir (~3h 45min)",icon:"💤"},
-{s:"06:45",e:"07:30",sub:"selfcare",t:"Despertar, prepararse",icon:"☀️"},
-{s:"07:30",e:"10:00",sub:"selfcare",t:"Pilates",icon:"🧘"},
-{s:"10:00",e:"10:30",sub:"selfcare",t:"Volver, snack",icon:"🥤"},
-{s:"10:30",e:"11:30",sub:"selfcare",t:"Siesta (1h)",icon:"💤"},
-{s:"11:30",e:"12:00",sub:"selfcare",t:"Ducha, almuerzo",icon:"🍽️"},
-{s:"12:00",e:"14:30",sub:"delitos",t:"Repaso profundo: puntos débiles",icon:"⚖️"},
-{s:"14:30",e:"15:00",sub:"selfcare",t:"Break",icon:"🍃"},
-{s:"15:00",e:"17:30",sub:"vocacion",t:"Vocación: sesión dedicada (~10p)",icon:"🏛️"},
-{s:"17:30",e:"18:00",sub:"selfcare",t:"Estiramientos (20 min)",icon:"🧘"},
-{s:"18:00",e:"19:00",sub:"vocacion",t:"Vocación: esquemas",icon:"🏛️",peak:true},
-{s:"19:00",e:"21:30",sub:"delitos",t:"Delitos: esquemas síntesis",icon:"⚖️",peak:true},
-{s:"21:30",e:"22:00",sub:"selfcare",t:"Break",icon:"🍃"},
-{s:"22:00",e:"22:30",sub:"selfcare",t:"Cena",icon:"🍽️"},
-{s:"22:30",e:"02:00",sub:"delitos",t:"Delitos: autoevaluación",icon:"⚖️"},
-{s:"02:00",e:"02:30",sub:"selfcare",t:"Wind-down",icon:"🌙"},
-],sum:"Repaso profundo Delitos | Vocación +10p + esquemas",alerts:["🏛️ Vocación sesión DEDICADA","⚖️ Control en 3 días"]},
-
-{date:"2026-03-29",wd:"Domingo",label:"29 mar",blocks:[
-{s:"02:30",e:"10:00",sub:"selfcare",t:"Dormir largo (~7.5h)",icon:"💤"},
-{s:"10:00",e:"10:30",sub:"selfcare",t:"Despertar, desayuno",icon:"☀️"},
-{s:"10:30",e:"11:00",sub:"selfcare",t:"Yoga (30 min)",icon:"🧘"},
-{s:"11:00",e:"13:30",sub:"delitos",t:"Segundo repaso L5-L10",icon:"⚖️"},
-{s:"13:30",e:"14:00",sub:"selfcare",t:"Almuerzo",icon:"🍽️"},
-{s:"14:00",e:"16:00",sub:"delitos",t:"Esquemas finales",icon:"⚖️"},
-{s:"16:00",e:"16:30",sub:"selfcare",t:"Break, caminar",icon:"🍃"},
-{s:"16:30",e:"18:30",sub:"vocacion",t:"Vocación: terminar lectura (~5p) + notas",icon:"🏛️"},
-{s:"18:30",e:"19:00",sub:"selfcare",t:"Break",icon:"🍃"},
-{s:"19:00",e:"21:30",sub:"vocacion",t:"Vocación: REPASO completo",icon:"🏛️",peak:true},
-{s:"21:30",e:"22:00",sub:"selfcare",t:"Break",icon:"🍃"},
-{s:"22:00",e:"22:30",sub:"selfcare",t:"Cena",icon:"🍽️"},
-{s:"22:30",e:"02:00",sub:"delitos",t:"Delitos: simulación control",icon:"⚖️"},
-{s:"02:00",e:"02:30",sub:"selfcare",t:"Wind-down",icon:"🌙"},
-],sum:"Delitos repaso ✓ | Vocación lectura COMPLETA + repaso",alerts:["⚖️ Control en 2 días","🏛️ Cerrar lectura Vocación"]},
-
-{date:"2026-03-30",wd:"Lunes",label:"30 mar",blocks:[
-{s:"02:30",e:"08:30",sub:"selfcare",t:"Dormir (~6h)",icon:"💤"},
-{s:"08:30",e:"09:00",sub:"selfcare",t:"Despertar, desayuno",icon:"☀️"},
-{s:"09:00",e:"09:30",sub:"selfcare",t:"Estiramientos (20 min)",icon:"🧘"},
-{s:"09:30",e:"10:40",sub:"etica",t:"Bus → Ética lectura ~6p",icon:"📘"},
-{s:"10:40",e:"11:00",sub:"clase",t:"Llegar",icon:"🎓"},
-{s:"11:00",e:"12:10",sub:"clase",t:"Clase Ética",icon:"🎓"},
-{s:"12:10",e:"13:00",sub:"delitos",t:"Repaso Delitos en uni",icon:"⚖️"},
-{s:"13:00",e:"14:00",sub:"transporte",t:"Bus → repaso mental",icon:"🚌"},
-{s:"14:00",e:"14:30",sub:"selfcare",t:"Almuerzo",icon:"🍽️"},
-{s:"14:30",e:"17:00",sub:"delitos",t:"Repaso final L5-L10",icon:"⚖️"},
-{s:"17:00",e:"17:30",sub:"selfcare",t:"Break",icon:"🍃"},
-{s:"17:30",e:"18:15",sub:"vocacion",t:"Vocación: repaso (45 min)",icon:"🏛️"},
-{s:"18:15",e:"18:30",sub:"selfcare",t:"Prepararse pilates",icon:"✨"},
-{s:"18:30",e:"21:00",sub:"selfcare",t:"Pilates",icon:"🧘"},
-{s:"21:00",e:"22:00",sub:"selfcare",t:"Ducha, descanso",icon:"🍃"},
-{s:"22:00",e:"22:30",sub:"selfcare",t:"Cena",icon:"🍽️"},
-{s:"22:30",e:"01:00",sub:"delitos",t:"Delitos: repaso FINAL",icon:"⚖️"},
-{s:"01:00",e:"02:00",sub:"selfcare",t:"Relax — confía en lo estudiado",icon:"🌙"},
-{s:"02:00",e:"02:30",sub:"selfcare",t:"Wind-down",icon:"🌙"},
-],sum:"Delitos LISTO ✓ | Ética ✓ | Vocación repaso",alerts:["⚖️ MAÑANA CONTROL Delitos","📘 Ética para clase"]},
-
-{date:"2026-03-31",wd:"Martes",label:"31 mar",blocks:[
-{s:"02:30",e:"06:15",sub:"selfcare",t:"Dormir (~3h 45min)",icon:"💤"},
-{s:"06:15",e:"07:00",sub:"selfcare",t:"Despertar, desayuno, modafinil",icon:"☀️"},
-{s:"07:00",e:"08:00",sub:"delitos",t:"Bus → último repaso esquemas",icon:"⚖️"},
-{s:"08:00",e:"08:30",sub:"delitos",t:"Repaso final en uni",icon:"⚖️"},
-{s:"08:30",e:"13:30",sub:"clase",t:"Clases (incl. CONTROL Delitos)",icon:"⚖️"},
-{s:"13:30",e:"15:00",sub:"selfcare",t:"Almuerzo + descanso",icon:"🍽️"},
-{s:"15:00",e:"16:00",sub:"transporte",t:"Bus a casa",icon:"🚌"},
-{s:"16:00",e:"16:45",sub:"selfcare",t:"Siesta (45 min)",icon:"💤"},
-{s:"16:45",e:"17:00",sub:"selfcare",t:"Despertar, agua",icon:"💧"},
-{s:"17:00",e:"17:30",sub:"selfcare",t:"Yoga suave (30 min)",icon:"🧘"},
-{s:"17:30",e:"19:00",sub:"vocacion",t:"Vocación: repaso primera pasada",icon:"🏛️"},
-{s:"19:00",e:"21:30",sub:"vocacion",t:"Vocación: repaso profundo",icon:"🏛️",peak:true},
-{s:"21:30",e:"22:00",sub:"selfcare",t:"Break",icon:"🍃"},
-{s:"22:00",e:"22:30",sub:"selfcare",t:"Cena",icon:"🍽️"},
-{s:"22:30",e:"01:00",sub:"vocacion",t:"Vocación: segundo repaso",icon:"🏛️"},
-{s:"01:00",e:"02:30",sub:"vocacion",t:"Vocación: autoevaluación",icon:"🏛️"},
-{s:"02:30",e:"03:00",sub:"selfcare",t:"Wind-down",icon:"🌙"},
-],sum:"⚖️ Control Delitos ✓ ¡HECHO! | Vocación ~9h intensivo",alerts:["⚖️ CONTROL Delitos (15%)","🏛️ TODO a Vocación post-control"]},
-
-{date:"2026-04-01",wd:"Miércoles",label:"1 abr",blocks:[
-{s:"03:00",e:"08:30",sub:"selfcare",t:"Dormir (~5.5h)",icon:"💤"},
-{s:"08:30",e:"09:00",sub:"selfcare",t:"Despertar, desayuno nutritivo",icon:"☀️"},
-{s:"09:00",e:"09:30",sub:"selfcare",t:"Yoga/respiración (20 min)",icon:"🧘"},
-{s:"09:30",e:"10:40",sub:"vocacion",t:"Bus → repaso final esquemas",icon:"🏛️"},
-{s:"10:40",e:"12:20",sub:"vocacion",t:"Último repaso en uni",icon:"🏛️"},
-{s:"12:20",e:"17:20",sub:"clase",t:"Clases (incl. SOLEMNE Vocación)",icon:"🏛️"},
-{s:"17:20",e:"18:00",sub:"selfcare",t:"Lo lograste",icon:"🌟"},
-{s:"18:00",e:"19:00",sub:"transporte",t:"Bus a casa",icon:"🚌"},
-{s:"19:00",e:"23:59",sub:"selfcare",t:"DESCANSO MERECIDO",icon:"🎉"},
-],sum:"🏛️ Solemne Vocación ✓ | ¡Terminaste! 🎉",alerts:["🏛️ SOLEMNE Vocación (30%)","💪 Confía en tu preparación"]},
+const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+const MOODS = [
+  { grade: "A+", emoji: "🌟", color: "#5BAF6A" },
+  { grade: "A", emoji: "😄", color: "#6BC47A" },
+  { grade: "B+", emoji: "🙂", color: "#8BD44A" },
+  { grade: "B", emoji: "😊", color: "#C8DC39" },
+  { grade: "C", emoji: "😐", color: "#F0C030" },
+  { grade: "D", emoji: "😔", color: "#E89840" },
+  { grade: "F", emoji: "😞", color: "#D96A6A" },
 ];
+const EVAL_TYPES = ["Solemne", "Examen", "Control", "Ensayo", "Presentación", "Trabajo", "Otro"];
 
-/* ─── helpers ─── */
-function t2m(t){const[h,m]=t.split(":").map(Number);return h*60+m}
-function dur(a,b){let s=t2m(a),e=t2m(b);if(e<=s)e+=1440;return e-s}
-function fmtDur(min){if(min>=60){const h=Math.floor(min/60);const m=min%60;return m>0?`${h}h ${m}m`:`${h}h`}return`${min}m`}
-function fmtTime(t){const[h,m]=t.split(":");const hr=parseInt(h);const ap=hr>=12&&hr<24?"PM":"AM";const d=hr===0?12:hr>12?hr-12:hr;return`${d}:${m} ${ap}`}
-function getNowMin(){const n=new Date();const s=new Date(n.toLocaleString("en-US",{timeZone:"America/Santiago"}));return s.getHours()*60+s.getMinutes()}
-function getSantiagoDate(){const n=new Date();const s=new Date(n.toLocaleString("en-US",{timeZone:"America/Santiago"}));return`${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,"0")}-${String(s.getDate()).padStart(2,"0")}`}
-/* Before 4AM, we're still "in" the previous day's schedule since all days run until ~3AM */
-function getScheduleDate(){
-  const n=new Date();const s=new Date(n.toLocaleString("en-US",{timeZone:"America/Santiago"}));
-  if(s.getHours()<4){s.setDate(s.getDate()-1)}
-  return`${s.getFullYear()}-${String(s.getMonth()+1).padStart(2,"0")}-${String(s.getDate()).padStart(2,"0")}`
-}
-function getClockStr(){const n=new Date();const s=new Date(n.toLocaleString("en-US",{timeZone:"America/Santiago"}));const h=String(s.getHours()).padStart(2,"0");const m=String(s.getMinutes()).padStart(2,"0");return`${h}:${m}`}
+// ==================== STORAGE ====================
+const SK = "study-tracker-v3";
+const defaultData = () => ({ schedule: DEFAULT_SCHEDULE, tasks: [], evaluations: [], pomodoroSessions: [], dailyLogs: {}, settings: { pomodoroMode: "25/5" }, grades: {} });
+const loadData = async () => { try { const r = localStorage.getItem(SK); if (r) { const parsed = JSON.parse(r); return { ...defaultData(), ...parsed }; } } catch(e){} return defaultData(); };
+const saveData = async (d) => { try { localStorage.setItem(SK, JSON.stringify(d)); } catch(e){} };
 
-function App(){
-  const[sel,setSel]=useState(()=>{const t=getScheduleDate();const i=DAYS.findIndex(d=>d.date===t);return i>=0?i:0});
-  const[now,setNow]=useState(getNowMin);
-  const[clock,setClock]=useState(getClockStr);
-  const curRef=useRef(null);
+// ==================== UTILITIES ====================
+const today = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+const localDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const fmtDate = (d) => new Date(d+"T12:00:00").toLocaleDateString("es-CL",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+const daysUntil = (d) => Math.ceil((new Date(d+"T12:00:00")-new Date(today()+"T12:00:00"))/864e5);
+const mToHM = (m) => { const h=Math.floor(m/60),mn=m%60; return h>0?`${h}h${mn>0?` ${mn}m`:""}`:mn>0?`${mn}m`:"0m"; };
+const getWeekDates = (off=0) => { const d=new Date();d.setDate(d.getDate()+off*7);const day=d.getDay();const mon=new Date(d);mon.setDate(d.getDate()-(day===0?6:day-1));return Array.from({length:7},(_,i)=>{const x=new Date(mon);x.setDate(mon.getDate()+i);return localDateStr(x);}); };
+const getMonthDates = (y,m) => { const f=new Date(y,m,1),l=new Date(y,m+1,0),s=f.getDay()===0?6:f.getDay()-1; const days=[]; for(let i=-s;i<=l.getDate()-1+(6-(l.getDay()===0?6:l.getDay()-1));i++){const d=new Date(y,m,i+1);days.push(localDateStr(d));} return days; };
+const getPriScore = (t) => { const d=daysUntil(t.dueDate); const u=d<=0?100:d<=1?90:d<=3?70:d<=7?40:10; return u+Math.min((t.estimatedHours||3)*5,30); };
+const getPriLabel = (s) => s>=80?{text:"Urgente",color:"#D96A6A",bg:"rgba(217,106,106,0.1)"}:s>=60?{text:"Alta",color:"#E89840",bg:"rgba(232,152,64,0.1)"}:s>=30?{text:"Media",color:"#5B9BD5",bg:"rgba(91,155,213,0.1)"}:{text:"Baja",color:"#5BAF6A",bg:"rgba(91,175,106,0.1)"};
 
-  useEffect(()=>{const iv=setInterval(()=>{setNow(getNowMin());setClock(getClockStr())},15000);return()=>clearInterval(iv)},[]);
-  useEffect(()=>{if(curRef.current)curRef.current.scrollIntoView({behavior:"smooth",block:"center"})},[sel]);
-
-  const day=DAYS[sel];
-  /* A day's schedule is "active" if: it's the schedule date (accounting for overnight) */
-  const isActive=day.date===getScheduleDate();
-
-  const currentBlock=useMemo(()=>{
-    if(!isActive)return-1;
-    /* now is 0-1439 (real clock minutes). For overnight blocks (start > end),
-       we add 1440 to both end and now-if-small to compare correctly.
-       Key fix: only match overnight blocks (start > 720) when now < 240 (before 4AM),
-       meaning we're in the tail end. Don't match them when now > 720 (afternoon). */
-    for(let i=0;i<day.blocks.length;i++){
-      const b=day.blocks[i];
-      let sA=t2m(b.s),eA=t2m(b.e);
-      const isOvernight=eA<=sA;
-      if(isOvernight)eA+=1440;
-      let nA=now;
-      if(isOvernight&&nA<sA)nA+=1440;
-      if(nA>=sA&&nA<eA)return i;
+// Grade calculation helper: given target final grade, evaluations with weights and existing grades, 
+// compute what's needed on remaining evals
+const calcNeededGrades = (evals, targetGrade = 6.7) => {
+  let earnedWeight = 0, earnedPoints = 0, remainWeight = 0;
+  const remaining = [];
+  evals.forEach(ev => {
+    if (ev.grade != null && ev.grade !== "") {
+      earnedWeight += ev.weight;
+      earnedPoints += ev.grade * ev.weight;
+    } else {
+      remainWeight += ev.weight;
+      remaining.push(ev);
     }
-    return-1;
-  },[day,now,isActive]);
+  });
+  if (remainWeight === 0) {
+    const final = earnedWeight > 0 ? earnedPoints / earnedWeight : 0;
+    return { final: Math.round(final * 10) / 10, needed: null, possible: final, impossible: false };
+  }
+  const needed = (targetGrade * (earnedWeight + remainWeight) - earnedPoints) / remainWeight;
+  const maxPossible = (earnedPoints + 7.0 * remainWeight) / (earnedWeight + remainWeight);
+  const impossible = needed > 7.0;
+  const currentFinal = earnedWeight > 0 ? earnedPoints / earnedWeight : null;
+  return { needed: Math.round(needed * 10) / 10, possible: Math.round(maxPossible * 10) / 10, impossible, remaining, currentFinal: currentFinal ? Math.round(currentFinal * 10) / 10 : null };
+};
 
-  const getRemaining=useCallback((b)=>{
-    let e=t2m(b.e),s=t2m(b.s),n=now;
-    if(e<=s)e+=1440;
-    if(n<s)n+=1440;
-    return Math.max(0,e-n);
-  },[now]);
+// ==================== STYLES ====================
+const fontStack = "'SF Pro Display',-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif";
+const glassStyle = (accent, extra={}) => ({
+  background: accent ? `linear-gradient(135deg,${accent}06 0%,rgba(255,255,255,0.72) 40%,rgba(255,255,255,0.60) 100%)` : "linear-gradient(135deg,rgba(255,255,255,0.72) 0%,rgba(255,255,255,0.55) 100%)",
+  backdropFilter:"blur(40px) saturate(1.8)",WebkitBackdropFilter:"blur(40px) saturate(1.8)",
+  borderRadius:24,border:"1px solid rgba(255,255,255,0.5)",
+  boxShadow:"0 8px 32px rgba(0,0,0,0.04),inset 0 1px 0 rgba(255,255,255,0.6),0 1px 3px rgba(0,0,0,0.02)",
+  padding:24,...extra
+});
+const inp = { padding:"12px 16px",borderRadius:14,border:"1px solid rgba(0,0,0,0.06)",background:"rgba(255,255,255,0.5)",backdropFilter:"blur(10px)",fontSize:14,fontFamily:fontStack,outline:"none",transition:"all 0.3s",boxSizing:"border-box",width:"100%" };
+const btnP = (c="#5B9BD5") => ({padding:"12px 24px",borderRadius:16,border:"none",cursor:"pointer",background:`linear-gradient(135deg,${c},${c}BB)`,color:"#fff",fontSize:14,fontWeight:600,fontFamily:fontStack,boxShadow:`0 4px 20px ${c}30`,transition:"all 0.3s",letterSpacing:0.3});
+const btnG = (x={}) => ({padding:"12px 20px",borderRadius:14,border:"1px solid rgba(0,0,0,0.06)",cursor:"pointer",background:"rgba(255,255,255,0.5)",backdropFilter:"blur(10px)",fontSize:13,fontFamily:fontStack,color:"#6B7280",transition:"all 0.3s",...x});
+const lbl = { fontSize:11,fontWeight:600,color:"#A0A8B8",marginBottom:12,textTransform:"uppercase",letterSpacing:1.5 };
 
-  return(
-    <div style={{background:"#faf9f7",minHeight:"100vh",maxWidth:480,margin:"0 auto",position:"relative"}}>
-      {/* Header */}
-      <div style={{padding:"20px 20px 0",position:"sticky",top:0,background:"#faf9f7",zIndex:10}}>
-        <div style={{display:"flex",gap:2,marginBottom:12,overflowX:"auto",paddingBottom:6}}>
-          {DAYS.map((d,i)=>{
-            const dn=new Date(d.date+"T12:00:00").getDate();
-            const isSel=i===sel;
-            const isT=d.date===getScheduleDate();
-            const isExam=d.sum.includes("CONTROL")||d.sum.includes("Solemne");
-            return(
-              <button key={i} onClick={()=>setSel(i)} style={{
-                minWidth:46,padding:"6px 4px",borderRadius:12,border:"none",cursor:"pointer",
-                background:isSel?"#1a1a1a":isT?"rgba(231,76,60,0.08)":"transparent",
-                display:"flex",flexDirection:"column",alignItems:"center",gap:1,flexShrink:0
-              }}>
-                <span style={{fontSize:9,color:isSel?"#999":"#999",textTransform:"uppercase",letterSpacing:.5}}>{d.wd.slice(0,3)}</span>
-                <span style={{fontSize:16,fontWeight:isSel?700:500,color:isSel?"#fff":isT?"#e74c3c":"#1a1a1a"}}>{dn}</span>
-                {isExam&&<span style={{width:5,height:5,borderRadius:"50%",background:"#e74c3c",marginTop:1}}/>}
-              </button>
-            )
-          })}
+const Glass = ({children,accent,style={},onClick}) => <div onClick={onClick} style={glassStyle(accent,style)}>{children}</div>;
+const Modal = ({children,onClose,title}) => (
+  <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.2)",backdropFilter:"blur(12px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999}} onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}>
+    <div style={glassStyle(null,{width:460,maxWidth:"90vw",maxHeight:"85vh",overflow:"auto"})} onMouseDown={e=>e.stopPropagation()}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+        <h3 style={{fontSize:18,fontWeight:600,color:"#1F2937",letterSpacing:-0.3,margin:0}}>{title}</h3>
+        <button onClick={onClose} style={{border:"none",background:"rgba(0,0,0,0.04)",borderRadius:10,width:32,height:32,cursor:"pointer",fontSize:16,color:"#9CA3AF",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+      </div>
+      {children}
+    </div>
+  </div>
+);
+const SectionHeader = ({title,subtitle,right}) => (
+  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:28}}>
+    <div>
+      <h1 style={{fontSize:26,fontWeight:700,color:"#1F2937",letterSpacing:-0.5,margin:0,lineHeight:1.2}}>{title}</h1>
+      {subtitle && <p style={{color:"#A0A8B8",fontWeight:400,marginTop:6,fontSize:14,letterSpacing:0.2}}>{subtitle}</p>}
+    </div>
+    {right}
+  </div>
+);
+
+// ==================== FOCUS MODE (LAVA LAMP) ====================
+function FocusMode({timeLeft,totalTime,subject,isBreak,isRunning,sessionCount,onToggle,onExit}) {
+  const canvasRef=useRef(null);const animRef=useRef(null);
+  const mins=Math.floor(timeLeft/60),secs=timeLeft%60;
+  const progress=1-timeLeft/(totalTime*60);
+  const sc=SUBJECTS[subject]?.color||"#5B9BD5";
+  const circ=2*Math.PI*140;
+
+  useEffect(()=>{
+    const canvas=canvasRef.current;if(!canvas)return;
+    const ctx=canvas.getContext("2d");
+    const w=canvas.width=window.innerWidth*2,h=canvas.height=window.innerHeight*2;
+    canvas.style.width="100vw";canvas.style.height="100vh";
+    let t=0;
+    const R=parseInt(sc.slice(1,3),16),G=parseInt(sc.slice(3,5),16),B=parseInt(sc.slice(5,7),16);
+
+    // Lava lamp blobs with metaball-like behavior
+    const blobs = Array.from({length:8},(_,i)=>({
+      x:Math.random()*w, y:Math.random()*h,
+      vx:(Math.random()-0.5)*1.5, vy:(Math.random()-0.5)*1.5 + (i%2===0?0.3:-0.3),
+      r:Math.min(w,h)*(0.08+Math.random()*0.12),
+      phase:Math.random()*Math.PI*2,
+      speed:0.3+Math.random()*0.4,
+    }));
+
+    const draw=()=>{
+      t+=0.008;
+      // Background gradient
+      const bg=ctx.createLinearGradient(0,0,w*0.5,h);
+      bg.addColorStop(0,`rgba(${Math.max(R-40,10)},${Math.max(G-40,10)},${Math.max(B-40,10)},1)`);
+      bg.addColorStop(0.5,`rgba(${Math.max(R-60,5)},${Math.max(G-60,5)},${Math.max(B-60,5)},1)`);
+      bg.addColorStop(1,`rgba(${Math.max(R-80,0)},${Math.max(G-80,0)},${Math.max(B-80,0)},1)`);
+      ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+
+      // Update & draw lava blobs
+      blobs.forEach((b,i)=>{
+        b.x+=b.vx+Math.sin(t*b.speed+b.phase)*2;
+        b.y+=b.vy+Math.cos(t*b.speed*0.7+b.phase)*1.5;
+        // Bounce off edges with softness
+        if(b.x<-b.r)b.x=w+b.r;if(b.x>w+b.r)b.x=-b.r;
+        if(b.y<-b.r*2){b.vy=Math.abs(b.vy)*0.8+0.3;b.y=-b.r*2;}
+        if(b.y>h+b.r*2){b.vy=-Math.abs(b.vy)*0.8-0.3;b.y=h+b.r*2;}
+
+        const pulseR=b.r*(1+0.2*Math.sin(t*b.speed*1.5+b.phase));
+        const grad=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,pulseR);
+        const alpha=0.15+0.08*Math.sin(t+i);
+        grad.addColorStop(0,`rgba(${Math.min(R+80,255)},${Math.min(G+80,255)},${Math.min(B+80,255)},${alpha*1.2})`);
+        grad.addColorStop(0.3,`rgba(${Math.min(R+40,255)},${Math.min(G+40,255)},${Math.min(B+40,255)},${alpha*0.8})`);
+        grad.addColorStop(0.6,`rgba(${R},${G},${B},${alpha*0.4})`);
+        grad.addColorStop(1,`rgba(${R},${G},${B},0)`);
+        ctx.fillStyle=grad;
+        ctx.beginPath();ctx.arc(b.x,b.y,pulseR,0,Math.PI*2);ctx.fill();
+      });
+
+      // Subtle overlay glow in center
+      const cg=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,Math.min(w,h)*0.4);
+      cg.addColorStop(0,`rgba(${Math.min(R+100,255)},${Math.min(G+100,255)},${Math.min(B+100,255)},0.04)`);
+      cg.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=cg;ctx.fillRect(0,0,w,h);
+
+      animRef.current=requestAnimationFrame(draw);
+    };
+    draw();
+    return ()=>cancelAnimationFrame(animRef.current);
+  },[sc]);
+
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:99999,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+      <canvas ref={canvasRef} style={{position:"absolute",inset:0}} />
+      <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",alignItems:"center"}}>
+        <button onClick={onExit} style={{position:"absolute",top:-80,right:-60,...btnG({background:"rgba(255,255,255,0.15)",color:"rgba(255,255,255,0.7)",fontSize:12,padding:"8px 16px",borderRadius:12,border:"1px solid rgba(255,255,255,0.15)",backdropFilter:"blur(20px)"})}}>
+          Salir
+        </button>
+        <div style={{fontSize:14,fontWeight:500,color:"rgba(255,255,255,0.5)",letterSpacing:3,textTransform:"uppercase",marginBottom:32}}>
+          {isBreak?"Descanso":SUBJECTS[subject]?.name}
         </div>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-          <div>
-            <div style={{fontSize:13,color:"#999",fontWeight:500}}>{day.wd}</div>
-            <div style={{fontSize:22,fontWeight:700}}>{day.label}</div>
+        <div style={{position:"relative",width:320,height:320,marginBottom:40}}>
+          <svg width="320" height="320" style={{transform:"rotate(-90deg)",filter:`drop-shadow(0 0 40px rgba(255,255,255,0.15))`}}>
+            <defs><linearGradient id="fRing" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="rgba(255,255,255,0.9)" />
+              <stop offset="50%" stopColor="rgba(255,255,255,0.5)" />
+              <stop offset="100%" stopColor="rgba(255,255,255,0.2)" />
+            </linearGradient></defs>
+            <circle cx="160" cy="160" r="140" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="18" />
+            <circle cx="160" cy="160" r="140" fill="none" stroke="url(#fRing)" strokeWidth="18" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ*(1-progress)} style={{transition:"stroke-dashoffset 1s linear"}} />
+          </svg>
+          <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+            <div style={{fontSize:72,fontWeight:200,color:"rgba(255,255,255,0.9)",letterSpacing:-3,fontVariantNumeric:"tabular-nums",fontFamily:fontStack}}>
+              {String(mins).padStart(2,"0")}:{String(secs).padStart(2,"0")}
+            </div>
+            <div style={{fontSize:13,color:"rgba(255,255,255,0.35)",marginTop:4}}>Sesión {sessionCount%4+1} / 4</div>
           </div>
-          {isActive&&<div style={{fontSize:28,fontWeight:300,fontVariantNumeric:"tabular-nums"}}>{clock}</div>}
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:4,marginBottom:10}}>
-          {day.alerts.map((a,i)=>(
-            <div key={i} style={{fontSize:12,color:"#e67e22",padding:"6px 10px",background:"rgba(230,126,34,0.06)",borderRadius:8}}>{a}</div>
+        <button onClick={onToggle} style={{width:64,height:64,borderRadius:32,border:"1px solid rgba(255,255,255,0.2)",cursor:"pointer",background:"rgba(255,255,255,0.1)",backdropFilter:"blur(20px)",color:"rgba(255,255,255,0.8)",fontSize:22,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.3s",boxShadow:"0 8px 32px rgba(0,0,0,0.2)"}}>
+          {isRunning?"❚❚":"▶"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ==================== POST-POMODORO REFLECTION MODAL ====================
+function ReflectionModal({subject, onSubmit, onSkip}) {
+  const [reflection, setReflection] = useState("");
+  const [focused, setFocused] = useState(null);
+  const sc = SUBJECTS[subject]?.color || "#5B9BD5";
+  return (
+    <Modal title="Reflexión del pomodoro" onClose={onSkip}>
+      <p style={{fontSize:13,color:"#8892A4",marginBottom:16}}>Tómate un momento antes del descanso.</p>
+      <div style={{...lbl}}>¿Cómo estuvo tu enfoque?</div>
+      <div style={{display:"flex",gap:8,marginBottom:16}}>
+        {[{val:"focused",label:"Enfocado/a",color:"#5BAF6A"},{val:"distracted",label:"Distraído/a",color:"#E89840"}].map(o=>(
+          <button key={o.val} onClick={()=>setFocused(o.val)} style={{
+            flex:1,padding:"14px 16px",borderRadius:14,cursor:"pointer",fontFamily:fontStack,fontSize:13,fontWeight:600,
+            border:focused===o.val?`2px solid ${o.color}`:"2px solid rgba(0,0,0,0.04)",
+            background:focused===o.val?`${o.color}12`:"rgba(0,0,0,0.01)",
+            color:focused===o.val?o.color:"#8892A4",transition:"all 0.2s"
+          }}>{o.label}</button>
+        ))}
+      </div>
+      <div style={{...lbl}}>¿Qué aprendiste?</div>
+      <textarea value={reflection} onChange={e=>setReflection(e.target.value)} placeholder="Algo breve..." style={{...inp,minHeight:80,resize:"vertical",lineHeight:1.6,marginBottom:16}} />
+      <div style={{display:"flex",gap:8}}>
+        <button onClick={()=>onSubmit({reflection,focused})} style={{...btnP(sc),flex:1}}>Guardar</button>
+        <button onClick={onSkip} style={btnG()}>Saltar</button>
+      </div>
+    </Modal>
+  );
+}
+
+// ==================== MAIN APP ====================
+function StudyTracker() {
+  const [data,setData]=useState(null);const [tab,setTab]=useState("pomodoro");const [loading,setLoading]=useState(true);
+  useEffect(()=>{loadData().then(d=>{setData(d);setLoading(false);});},[]);
+  const upd=useCallback(fn=>{setData(p=>{const n=typeof fn==="function"?fn(p):{...p,...fn};saveData(n);return n;});},[]);
+
+  if(loading||!data) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",background:"linear-gradient(135deg,#F6F8FF,#EEF2FF)",fontFamily:fontStack}}><div style={{textAlign:"center"}}><div style={{width:48,height:48,borderRadius:24,background:"linear-gradient(135deg,#5B9BD5,#7BC0F7)",margin:"0 auto 16px"}} /><div style={{fontSize:16,color:"#9CA3AF",fontWeight:300}}>Cargando...</div></div></div>;
+
+  const tabs=[{id:"pomodoro",label:"Pomodoro"},{id:"schedule",label:"Horario"},{id:"calendar",label:"Calendario"},{id:"tasks",label:"Tareas"},{id:"daily",label:"Diario"},{id:"grades",label:"Notas"},{id:"stats",label:"Estadísticas"}];
+
+  return (
+    <div style={{display:"flex",height:"100vh",background:"linear-gradient(160deg,#F6F8FF 0%,#EEF2FF 30%,#F0F4FF 60%,#F8F9FF 100%)",fontFamily:fontStack,overflow:"hidden"}}>
+      <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:0}}>
+        <div style={{position:"absolute",top:"10%",right:"15%",width:400,height:400,borderRadius:"50%",background:"radial-gradient(circle,rgba(91,155,213,0.06) 0%,transparent 70%)",filter:"blur(60px)"}} />
+        <div style={{position:"absolute",bottom:"20%",left:"10%",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle,rgba(139,106,217,0.04) 0%,transparent 70%)",filter:"blur(60px)"}} />
+      </div>
+      {/* Sidebar */}
+      <div style={{width:200,minWidth:200,position:"relative",zIndex:1,background:"linear-gradient(180deg,rgba(255,255,255,0.55) 0%,rgba(255,255,255,0.35) 100%)",backdropFilter:"blur(40px) saturate(1.8)",borderRight:"1px solid rgba(255,255,255,0.5)",display:"flex",flexDirection:"column",padding:"28px 0",boxShadow:"inset -1px 0 0 rgba(255,255,255,0.3)"}}>
+        <div style={{padding:"0 24px",marginBottom:36}}>
+          <div style={{fontSize:20,fontWeight:700,letterSpacing:-0.5,background:"linear-gradient(135deg,#5B9BD5,#8B6AD9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Study Tracker</div>
+          <div style={{fontSize:11,color:"#A0A8B8",marginTop:6,fontWeight:400,letterSpacing:0.5}}>Último semestre</div>
+        </div>
+        <nav style={{flex:1,display:"flex",flexDirection:"column",gap:2}}>
+          {tabs.map(t=>(
+            <button key={t.id} onClick={()=>setTab(t.id)} style={{display:"flex",alignItems:"center",width:"100%",padding:"11px 24px",border:"none",cursor:"pointer",fontSize:13.5,fontWeight:tab===t.id?600:400,background:tab===t.id?"linear-gradient(90deg,rgba(91,155,213,0.12),rgba(91,155,213,0.02))":"transparent",color:tab===t.id?"#5B9BD5":"#8892A4",borderLeft:tab===t.id?"2.5px solid #5B9BD5":"2.5px solid transparent",transition:"all 0.25s",fontFamily:fontStack,letterSpacing:-0.1}}>{t.label}</button>
           ))}
-        </div>
-        <div style={{fontSize:11.5,color:"#666",padding:"8px 12px",background:"#fff",borderRadius:10,marginBottom:12,boxShadow:"0 1px 3px rgba(0,0,0,0.04)",border:"1px solid rgba(0,0,0,0.04)"}}>
-          {day.sum}
+        </nav>
+        <div style={{padding:"16px 24px",borderTop:"1px solid rgba(255,255,255,0.3)"}}>
+          <div style={{fontSize:10.5,color:"#B0B8C8",fontWeight:400,letterSpacing:0.3}}>Marzo — Junio 2026</div>
         </div>
       </div>
+      <div style={{flex:1,overflow:"auto",padding:"32px 36px",position:"relative",zIndex:1}}>
+        <div style={{display:tab==="pomodoro"?"block":"none"}}><PomodoroView data={data} upd={upd} /></div>
+        {tab==="schedule"&&<ScheduleView data={data} upd={upd} />}
+        {tab==="calendar"&&<CalendarView data={data} upd={upd} />}
+        {tab==="tasks"&&<TasksView data={data} upd={upd} />}
+        {tab==="daily"&&<DailyView data={data} upd={upd} />}
+        {tab==="grades"&&<GradesView data={data} upd={upd} />}
+        {tab==="stats"&&<StatsView data={data} />}
+      </div>
+    </div>
+  );
+}
 
-      {/* Timeline */}
-      <div style={{padding:"0 20px 40px"}}>
-        {day.blocks.map((b,i)=>{
-          const sub=SUB[b.sub];
-          const d=dur(b.s,b.e);
-          const isCur=i===currentBlock;
-          const isPast=isActive&&!isCur&&currentBlock>i;
-          const rem=isCur?getRemaining(b):0;
-          let gap=0;
-          if(i>0){const pe=t2m(day.blocks[i-1].e);const ts=t2m(b.s);gap=ts-pe;if(gap<0)gap+=1440}
-          return(
-            <div key={i}>
-              {gap>0&&gap<300&&(
-                <div style={{display:"flex",alignItems:"center",padding:"4px 0 4px 42px",gap:8}}>
-                  <div style={{width:1,height:12,background:"#e0e0e0"}}/>
-                  <span style={{fontSize:10,color:"#bbb"}}>{fmtDur(gap)} libre</span>
-                </div>
-              )}
-              <div ref={isCur?curRef:null} style={{display:"flex",gap:12,alignItems:"flex-start",padding:"8px 0",opacity:isPast?.4:1,position:"relative"}}>
-                <div style={{width:42,flexShrink:0,textAlign:"right",paddingTop:10}}>
-                  <div style={{fontSize:11,fontWeight:600,color:isCur?"#e74c3c":"#999",fontVariantNumeric:"tabular-nums"}}>{fmtTime(b.s)}</div>
-                </div>
-                <div style={{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0,width:20}}>
-                  <div style={{
-                    width:isCur?14:10,height:isCur?14:10,borderRadius:"50%",
-                    background:isCur?sub.color:isPast?"#ddd":sub.color,
-                    border:isCur?`3px solid ${sub.color}33`:"none",
-                    boxShadow:isCur?`0 0 0 4px ${sub.color}22`:"none",
-                    marginTop:10,flexShrink:0
-                  }}/>
-                  {i<day.blocks.length-1&&(
-                    <div style={{width:2,flex:1,minHeight:20,background:isPast?"#e8e8e8":sub.color+"33",marginTop:4}}/>
-                  )}
-                </div>
-                <div style={{
-                  flex:1,
-                  background:isCur?"#fff":sub.bg,
-                  border:isCur?`2px solid ${sub.color}`:`1px solid ${sub.color}22`,
-                  borderRadius:14,
-                  padding:isCur?"12px 14px":"10px 12px",
-                  boxShadow:isCur?`0 4px 16px ${sub.color}20`:"0 1px 2px rgba(0,0,0,0.02)"
-                }}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:6}}>
-                      <span style={{fontSize:16}}>{b.icon}</span>
-                      <span style={{fontSize:isCur?14:13,fontWeight:isCur?600:500,lineHeight:1.3,textDecoration:isPast?"line-through":"none"}}>{b.t}</span>
-                    </div>
-                    <span style={{fontSize:11,color:"#999",flexShrink:0,marginLeft:8,fontVariantNumeric:"tabular-nums"}}>{fmtDur(d)}</span>
+// ==================== SOUND EFFECTS ====================
+const playSound = (type) => {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (type === "start") {
+      // Gentle ascending chime
+      [440, 554, 659].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.15);
+        gain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + i * 0.15 + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.5);
+        osc.start(ctx.currentTime + i * 0.15);
+        osc.stop(ctx.currentTime + i * 0.15 + 0.5);
+      });
+    } else if (type === "end") {
+      // Warm completion tone (descending, richer)
+      [784, 659, 523, 523].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = i === 3 ? "triangle" : "sine";
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.2);
+        gain.gain.linearRampToValueAtTime(i === 3 ? 0.15 : 0.1, ctx.currentTime + i * 0.2 + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.2 + (i === 3 ? 0.8 : 0.4));
+        osc.start(ctx.currentTime + i * 0.2);
+        osc.stop(ctx.currentTime + i * 0.2 + (i === 3 ? 0.8 : 0.4));
+      });
+    }
+  } catch (e) { /* Audio not available */ }
+};
+
+// ==================== POMODORO ====================
+function PomodoroView({data,upd}) {
+  const [subject,setSub]=useState("etica");
+  const [mode,setMode]=useState(data.settings?.pomodoroMode||"25/5");
+  const [running,setRun]=useState(false);
+  const [brk,setBrk]=useState(false);
+  const [sessCt,setSC]=useState(0);
+  const [goalTask,setGoalTask]=useState(null);
+  const [focusMode,setFM]=useState(false);
+  const [showReflection,setShowRef]=useState(false);
+  const [tick,setTick]=useState(0);
+  const [pipOpen, setPipOpen]=useState(false);
+
+  const endTimeRef=useRef(null);
+  const intervalRef=useRef(null);
+  const stateRef=useRef({subject,mode,goalTask,brk,sessCt});
+  stateRef.current={subject,mode,goalTask,brk,sessCt};
+
+  const wt=mode==="25/5"?25:50, sb=mode==="25/5"?5:10, lb=mode==="25/5"?25:60;
+  const totalT=brk?(sessCt%4===0&&sessCt>0?lb:sb):wt;
+  const sc=SUBJECTS[subject]?.color||"#5B9BD5";
+  const pendingTasks=(data.tasks||[]).filter(t=>!t.completed&&t.subject===subject);
+
+  // Calculate display time
+  const getDisplayTime = () => {
+    if (running && endTimeRef.current) return Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
+    if (!running && endTimeRef.current) return Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
+    return totalT * 60;
+  };
+
+  // Handle timer completion
+  const handleComplete = useCallback(() => {
+    const st = stateRef.current;
+    const curWt = st.mode==="25/5"?25:50;
+    setRun(false);
+    endTimeRef.current = null;
+    playSound("end");
+
+    if (!st.brk) {
+      const nc = st.sessCt + 1;
+      setSC(nc);
+      const now = new Date();
+      const stMin = now.getHours()*60 + now.getMinutes() - curWt;
+      const session = {date:today(), subject:st.subject, minutes:curWt, timestamp:Date.now(), startHour:Math.floor(Math.max(0,stMin)/60), startMinute:Math.max(0,stMin)%60, taskId:st.goalTask||null};
+      upd(d=>({...d, pomodoroSessions:[...(d.pomodoroSessions||[]), session]}));
+      if (st.goalTask) {
+        upd(d=>({...d, tasks:(d.tasks||[]).map(t=>t.id===st.goalTask?{...t,actualMinutes:(t.actualMinutes||0)+curWt}:t)}));
+      }
+      setShowRef(true);
+      setBrk(true);
+      // Don't auto-start break — user must click Iniciar
+    } else {
+      setBrk(false);
+      // Don't auto-start work — user must click Iniciar
+    }
+  }, [upd]);
+
+  // Tick interval
+  useEffect(() => {
+    if (running) {
+      intervalRef.current = setInterval(() => {
+        if (endTimeRef.current && endTimeRef.current - Date.now() <= 0) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+          handleComplete();
+        }
+        setTick(t => t + 1);
+      }, 250);
+    } else {
+      if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+    }
+    return () => { if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; } };
+  }, [running, handleComplete]);
+
+  // Update tab title with countdown
+  useEffect(() => {
+    if (running) {
+      const dt = getDisplayTime();
+      const m = Math.floor(dt/60), s = dt%60;
+      const phase = brk ? "Descanso" : (SUBJECTS[subject]?.name || "Pomodoro");
+      document.title = `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")} — ${phase}`;
+    } else {
+      document.title = "Study Tracker — Lucía";
+    }
+  });
+
+  const toggle = () => {
+    if (!running) {
+      const secsLeft = endTimeRef.current ? Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000)) : totalT * 60;
+      endTimeRef.current = Date.now() + secsLeft * 1000;
+      playSound("start");
+      setRun(true);
+    } else {
+      // Pause: freeze remaining time
+      const remaining = endTimeRef.current ? Math.max(0, endTimeRef.current - Date.now()) : 0;
+      endTimeRef.current = Date.now() + remaining;
+      setRun(false);
+    }
+  };
+
+  const reset = () => { setRun(false); setBrk(false); endTimeRef.current = null; setTick(t=>t+1); document.title = "Study Tracker — Lucía"; };
+  const changeMode = (m) => { setMode(m); setRun(false); setBrk(false); endTimeRef.current = null; upd(d=>({...d,settings:{...d.settings,pomodoroMode:m}})); setTick(t=>t+1); };
+
+  const displayTimeLeft = getDisplayTime();
+  const mins = Math.floor(displayTimeLeft / 60), secs = displayTimeLeft % 60;
+  const prog = 1 - displayTimeLeft / (totalT * 60);
+  const circ = 2 * Math.PI * 120;
+  const todayS = (data.pomodoroSessions||[]).filter(s=>s.date===today());
+  const todayM = todayS.reduce((a,s)=>a+s.minutes, 0);
+
+  const handleReflection = (r) => {
+    // Save reflection to last session
+    upd(d=>{
+      const sessions=[...(d.pomodoroSessions||[])];
+      if(sessions.length>0){
+        const last={...sessions[sessions.length-1],reflection:r.reflection,focused:r.focused};
+        sessions[sessions.length-1]=last;
+      }
+      return {...d,pomodoroSessions:sessions};
+    });
+    setShowRef(false);
+  };
+
+  if(focusMode) return (<>
+    <FocusMode timeLeft={displayTimeLeft} totalTime={totalT} subject={subject} isBreak={brk} isRunning={running} sessionCount={sessCt} onToggle={toggle} onExit={()=>setFM(false)} />
+    {showReflection && <ReflectionModal subject={subject} onSubmit={handleReflection} onSkip={()=>setShowRef(false)} />}
+  </>);
+
+  return (
+    <div>
+      <SectionHeader title="Pomodoro" subtitle={todayM>0?`${mToHM(todayM)} estudiados hoy`:"Tiempo de enfocarse"} right={<div style={{display:"flex",gap:8}}><button onClick={()=>setPipOpen(p=>!p)} style={btnG({letterSpacing:0.5,fontWeight:500})}>{pipOpen?"Cerrar mini":"Mini timer"}</button><button onClick={()=>setFM(true)} style={btnG({letterSpacing:0.5,fontWeight:500})}>Modo foco</button></div>} />
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:24}}>
+        <Glass accent={sc} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:40}}>
+          <div style={{display:"flex",gap:6,marginBottom:28,background:"rgba(0,0,0,0.03)",borderRadius:14,padding:4}}>
+            {["25/5","50/10"].map(m=>(
+              <button key={m} onClick={()=>changeMode(m)} style={{padding:"8px 22px",borderRadius:11,border:"none",cursor:"pointer",background:mode===m?"rgba(255,255,255,0.9)":"transparent",boxShadow:mode===m?"0 2px 8px rgba(0,0,0,0.06)":"none",color:mode===m?sc:"#8892A4",fontSize:13,fontWeight:600,transition:"all 0.25s",fontFamily:fontStack}}>{m}</button>
+            ))}
+          </div>
+          <div style={{position:"relative",width:260,height:260,marginBottom:28}}>
+            <svg width="260" height="260" style={{transform:"rotate(-90deg)",filter:`drop-shadow(0 0 24px ${sc}20)`}}>
+              <defs><linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor={sc}/><stop offset="50%" stopColor={`${sc}BB`}/><stop offset="100%" stopColor={`${sc}55`}/></linearGradient></defs>
+              <circle cx="130" cy="130" r="115" fill="none" stroke="rgba(0,0,0,0.03)" strokeWidth="18"/>
+              <circle cx="130" cy="130" r="115" fill="none" stroke="url(#tg)" strokeWidth="18" strokeLinecap="round" strokeDasharray={2*Math.PI*115} strokeDashoffset={2*Math.PI*115*(1-prog)} style={{transition:"stroke-dashoffset 0.3s linear"}}/>
+            </svg>
+            <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+              <div style={{fontSize:13,fontWeight:500,color:brk?"#5BAF6A":`${sc}AA`,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{brk?"Descanso":"Enfoque"}</div>
+              <div style={{fontSize:52,fontWeight:200,color:"#1F2937",letterSpacing:-2,fontVariantNumeric:"tabular-nums"}}>{String(mins).padStart(2,"0")}:{String(secs).padStart(2,"0")}</div>
+              <div style={{fontSize:12,color:"#B0B8C8",marginTop:6}}>Sesión {sessCt%4+1} / 4</div>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:10}}>
+            <button onClick={toggle} style={btnP(sc)}>{running?"Pausar":"Iniciar"}</button>
+            <button onClick={reset} style={btnG()}>Reset</button>
+          </div>
+        </Glass>
+
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+          <Glass>
+            <div style={lbl}>Asignatura</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+              {Object.entries(SUBJECTS).map(([k,s])=>(
+                <button key={k} onClick={()=>{setSub(k);setGoalTask(null);}} style={{padding:"8px 14px",borderRadius:12,border:subject===k?`1.5px solid ${s.color}60`:"1.5px solid transparent",cursor:"pointer",background:subject===k?`${s.color}12`:"rgba(0,0,0,0.02)",fontSize:12,fontWeight:subject===k?600:400,color:subject===k?s.color:"#8892A4",transition:"all 0.25s",fontFamily:fontStack}}>{s.name}</button>
+              ))}
+            </div>
+          </Glass>
+
+          {/* Goal from pending tasks */}
+          <Glass accent={sc}>
+            <div style={lbl}>Objetivo (tarea pendiente)</div>
+            {pendingTasks.length===0 ? (
+              <p style={{fontSize:13,color:"#B0B8C8"}}>No hay tareas pendientes en esta asignatura</p>
+            ) : (
+              <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                {pendingTasks.map(t=>(
+                  <button key={t.id} onClick={()=>setGoalTask(goalTask===t.id?null:t.id)} style={{
+                    display:"flex",alignItems:"center",gap:10,padding:"10px 14px",borderRadius:12,cursor:"pointer",textAlign:"left",
+                    border:goalTask===t.id?`2px solid ${sc}`:"2px solid rgba(0,0,0,0.03)",
+                    background:goalTask===t.id?`${sc}08`:"rgba(0,0,0,0.01)",
+                    fontFamily:fontStack,fontSize:13,color:goalTask===t.id?sc:"#4A5568",fontWeight:goalTask===t.id?600:400,transition:"all 0.2s",width:"100%"
+                  }}>
+                    <div style={{width:8,height:8,borderRadius:4,background:goalTask===t.id?sc:"#C0C8D8",flexShrink:0}} />
+                    <span style={{flex:1}}>{t.name}</span>
+                    {t.dueDate && <span style={{fontSize:11,color:"#B0B8C8"}}>{daysUntil(t.dueDate)}d</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </Glass>
+
+          <Glass>
+            <div style={lbl}>Sesiones de hoy</div>
+            {todayS.length===0?<p style={{fontSize:13,color:"#B0B8C8"}}>Sin sesiones aún</p>:(
+              <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                {todayS.map((s,i)=>(
+                  <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 12px",borderRadius:12,background:SUBJECTS[s.subject]?.lightColor}}>
+                    <div style={{width:8,height:8,borderRadius:4,background:SUBJECTS[s.subject]?.color}} />
+                    <span style={{fontSize:13,color:SUBJECTS[s.subject]?.color,fontWeight:500,flex:1}}>{SUBJECTS[s.subject]?.name}</span>
+                    <span style={{fontSize:11,color:s.focused==="focused"?"#5BAF6A":s.focused==="distracted"?"#E89840":"#B0B8C8"}}>{s.focused==="focused"?"Enfocado":s.focused==="distracted"?"Distraído":""}</span>
+                    <span style={{fontSize:12,color:"#B0B8C8"}}>{s.minutes}min</span>
                   </div>
-                  {isCur&&rem>0&&(
-                    <div style={{marginTop:8}}>
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                        <span style={{fontSize:11,fontWeight:600,color:sub.color}}>{fmtDur(rem)} restantes</span>
-                        <span style={{fontSize:10,color:"#bbb"}}>{fmtTime(b.e)}</span>
-                      </div>
-                      <div style={{height:4,background:sub.color+"22",borderRadius:2}}>
-                        <div style={{height:4,background:sub.color,borderRadius:2,width:`${Math.max(5,100-((rem/d)*100))}%`,transition:"width 15s linear"}}/>
-                      </div>
-                    </div>
-                  )}
-                  {b.peak&&!isPast&&(
-                    <div style={{marginTop:6,fontSize:10,color:sub.color,fontWeight:600,display:"flex",alignItems:"center",gap:4}}>
-                      <span>⚡</span>PICO COGNITIVO
-                    </div>
-                  )}
-                  <div style={{marginTop:4,fontSize:10,color:sub.color,fontWeight:500}}>{sub.label}</div>
+                ))}
+              </div>
+            )}
+          </Glass>
+        </div>
+      </div>
+      {showReflection && <ReflectionModal subject={subject} onSubmit={handleReflection} onSkip={()=>setShowRef(false)} />}
+      {/* PiP Overlay - floats on top of everything */}
+      {pipOpen && (()=>{
+        const pipCirc = 2*Math.PI*42;
+        const pipProg = prog;
+        return (
+          <div style={{position:"fixed",bottom:24,right:24,zIndex:99998,width:180,
+            background:"linear-gradient(135deg,rgba(255,255,255,0.85),rgba(255,255,255,0.7))",
+            backdropFilter:"blur(40px) saturate(1.8)",WebkitBackdropFilter:"blur(40px) saturate(1.8)",
+            borderRadius:24,border:"1px solid rgba(255,255,255,0.6)",
+            boxShadow:`0 12px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.5)`,
+            padding:"16px 16px 14px",cursor:"move",userSelect:"none",
+          }}>
+            {/* Close button */}
+            <button onClick={()=>setPipOpen(false)} style={{position:"absolute",top:8,right:10,border:"none",background:"none",cursor:"pointer",color:"#B0B8C8",fontSize:14}}>×</button>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              {/* Mini ring */}
+              <div style={{position:"relative",width:56,height:56,flexShrink:0}}>
+                <svg width="56" height="56" style={{transform:"rotate(-90deg)"}}>
+                  <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(0,0,0,0.04)" strokeWidth="5"/>
+                  <circle cx="28" cy="28" r="22" fill="none" stroke={sc} strokeWidth="5" strokeLinecap="round"
+                    strokeDasharray={2*Math.PI*22} strokeDashoffset={2*Math.PI*22*(1-pipProg)}
+                    style={{transition:"stroke-dashoffset 0.3s"}} />
+                </svg>
+                <div style={{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <button onClick={toggle} style={{width:24,height:24,borderRadius:12,border:"none",cursor:"pointer",
+                    background:`linear-gradient(135deg,${sc},${sc}BB)`,color:"#fff",fontSize:10,
+                    display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 2px 8px ${sc}30`}}>
+                    {running?"❚❚":"▶"}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <div style={{fontSize:22,fontWeight:200,color:"#1F2937",fontVariantNumeric:"tabular-nums",letterSpacing:-1}}>
+                  {String(mins).padStart(2,"0")}:{String(secs).padStart(2,"0")}
+                </div>
+                <div style={{fontSize:10,color:`${sc}99`,fontWeight:500,letterSpacing:0.5,marginTop:1}}>
+                  {brk?"Descanso":(SUBJECTS[subject]?.name||"")}
                 </div>
               </div>
             </div>
-          );
-        })}
-        <div style={{display:"flex",gap:12,alignItems:"center",padding:"8px 0 0"}}>
-          <div style={{width:42}}/>
-          <div style={{width:20,display:"flex",justifyContent:"center"}}>
-            <div style={{width:8,height:8,borderRadius:"50%",background:"#ddd"}}/>
           </div>
-          <span style={{fontSize:11,color:"#bbb"}}>Fin del día</span>
+        );
+      })()}
+    </div>
+  );
+}
+
+// ==================== SCHEDULE ====================
+function ScheduleView({data,upd}) {
+  const [ed,setEd]=useState(null);const [ef,setEf]=useState({});
+  const sch=data.schedule||DEFAULT_SCHEDULE;const hours=Array.from({length:12},(_,i)=>i+7);
+  const save=()=>{if(!ed)return;const ns={...sch};ns[ed.day]=[...(ns[ed.day]||[])];if(ed.idx===-1)ns[ed.day].push(ef);else ns[ed.day][ed.idx]=ef;upd(d=>({...d,schedule:ns}));setEd(null);};
+  const del=()=>{if(!ed||ed.idx===-1)return;const ns={...sch};ns[ed.day]=sch[ed.day].filter((_,i)=>i!==ed.idx);upd(d=>({...d,schedule:ns}));setEd(null);};
+
+  return (
+    <div>
+      <SectionHeader title="Horario Semanal" subtitle="Semestre Otoño 2026" />
+      <Glass>
+        <div style={{display:"grid",gridTemplateColumns:"56px repeat(5,1fr)",gap:0}}>
+          <div/>
+          {DAYS.map(d=>(
+            <div key={d} style={{textAlign:"center",padding:"12px 4px 16px",fontWeight:600,color:"#5B9BD5",fontSize:13,borderBottom:"1px solid rgba(0,0,0,0.04)"}}>
+              {d}
+              <button onClick={()=>{setEd({day:d,idx:-1});setEf({subject:"etica",start:"09:00",end:"10:00",room:"",professor:""});}} style={{display:"block",margin:"6px auto 0",padding:"3px 10px",borderRadius:8,border:"1px solid rgba(91,155,213,0.15)",background:"transparent",cursor:"pointer",fontSize:11,color:"#5B9BD5",fontFamily:fontStack}}>+ Clase</button>
+            </div>
+          ))}
+          {hours.map(h=>(<React.Fragment key={h}>
+            <div style={{padding:"14px 6px 14px 0",fontSize:11,color:"#B0B8C8",textAlign:"right",borderTop:"1px solid rgba(0,0,0,0.02)",fontVariantNumeric:"tabular-nums"}}>{String(h).padStart(2,"0")}:00</div>
+            {DAYS.map(d=>{
+              const cls=(sch[d]||[]).filter(c=>parseInt(c.start)===h);
+              return <div key={`${d}${h}`} style={{borderTop:"1px solid rgba(0,0,0,0.02)",padding:3,minHeight:44}}>
+                {cls.map((c,ci)=>{const s=SUBJECTS[c.subject];return(
+                  <div key={ci} onClick={()=>{setEd({day:d,idx:sch[d].indexOf(c)});setEf({...c});}} style={{background:`linear-gradient(135deg,${s?.color}10,${s?.color}06)`,border:`1px solid ${s?.color}20`,borderRadius:12,padding:"8px 10px",cursor:"pointer",marginBottom:3}}>
+                    <div style={{fontSize:12,fontWeight:600,color:s?.color}}>{s?.name}</div>
+                    <div style={{fontSize:10.5,color:"#8892A4",marginTop:2}}>{c.start} – {c.end}</div>
+                    <div style={{fontSize:10.5,color:"#B0B8C8"}}>{c.room} · {c.professor}</div>
+                  </div>
+                );})}
+              </div>;
+            })}
+          </React.Fragment>))}
+        </div>
+      </Glass>
+      {ed&&<Modal title={ed.idx===-1?`Nueva clase — ${ed.day}`:`Editar — ${ed.day}`} onClose={()=>setEd(null)}>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <select value={ef.subject||""} onChange={e=>setEf({...ef,subject:e.target.value})} style={inp}>{Object.entries(SUBJECTS).map(([k,s])=><option key={k} value={k}>{s.name}</option>)}</select>
+          <div style={{display:"flex",gap:8}}><input type="time" value={ef.start||""} onChange={e=>setEf({...ef,start:e.target.value})} style={inp}/><input type="time" value={ef.end||""} onChange={e=>setEf({...ef,end:e.target.value})} style={inp}/></div>
+          <input placeholder="Sala" value={ef.room||""} onChange={e=>setEf({...ef,room:e.target.value})} style={inp}/>
+          <input placeholder="Profesor/a" value={ef.professor||""} onChange={e=>setEf({...ef,professor:e.target.value})} style={inp}/>
+          <div style={{display:"flex",gap:8,marginTop:8}}>
+            <button onClick={save} style={{...btnP(),flex:1}}>Guardar</button>
+            {ed.idx!==-1&&<button onClick={del} style={{...btnP("#D96A6A"),padding:"12px 20px"}}>Eliminar</button>}
+            <button onClick={()=>setEd(null)} style={btnG()}>Cancelar</button>
+          </div>
+        </div>
+      </Modal>}
+    </div>
+  );
+}
+
+// ==================== CALENDAR ====================
+function CalendarView({data,upd}) {
+  const [vd,setVd]=useState(new Date());const [show,setShow]=useState(false);
+  const [ef,setEf]=useState({subject:"etica",type:"Solemne",name:"",date:""});
+  const y=vd.getFullYear(),m=vd.getMonth();const md=getMonthDates(y,m);const evs=data.evaluations||[];
+  const mn=vd.toLocaleDateString("es-CL",{month:"long",year:"numeric"});
+
+  // Also include grade evaluations in calendar
+  const gradeEvals = [];
+  Object.entries(data.grades||{}).forEach(([subj,g])=>{
+    (g.evaluations||[]).forEach(ev=>{
+      if(ev.date) gradeEvals.push({...ev, subject:subj, fromGrades:true});
+    });
+  });
+
+  const add=()=>{if(!ef.name||!ef.date)return;upd(d=>({...d,evaluations:[...(d.evaluations||[]),{...ef,id:Date.now()}]}));setShow(false);setEf({subject:"etica",type:"Solemne",name:"",date:""});};
+  const del=(id)=>upd(d=>({...d,evaluations:(d.evaluations||[]).filter(e=>e.id!==id)}));
+
+  return (
+    <div>
+      <SectionHeader title="Calendario" subtitle="Evaluaciones y fechas importantes" right={<button onClick={()=>setShow(true)} style={btnP()}>+ Evaluación</button>} />
+      <Glass>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+          <button onClick={()=>setVd(new Date(y,m-1))} style={{border:"none",background:"none",cursor:"pointer",fontSize:18,color:"#5B9BD5"}}>‹</button>
+          <span style={{fontSize:17,fontWeight:600,color:"#1F2937",textTransform:"capitalize"}}>{mn}</span>
+          <button onClick={()=>setVd(new Date(y,m+1))} style={{border:"none",background:"none",cursor:"pointer",fontSize:18,color:"#5B9BD5"}}>›</button>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4,marginBottom:8}}>
+          {["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"].map(d=><div key={d} style={{textAlign:"center",fontSize:11,fontWeight:600,color:"#B0B8C8",padding:6}}>{d}</div>)}
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4}}>
+          {md.map((date,i)=>{
+            const d=new Date(date+"T12:00:00");const ic=d.getMonth()===m;const it=date===today();
+            const de=evs.filter(e=>e.date===date);
+            const ge=gradeEvals.filter(e=>e.date===date);
+            const sm=(data.pomodoroSessions||[]).filter(s=>s.date===date).reduce((a,s)=>a+s.minutes,0);
+            return <div key={i} onClick={()=>{setShow(true);setEf(f=>({...f,date}));}} style={{minHeight:76,padding:6,borderRadius:14,cursor:"pointer",background:it?"rgba(91,155,213,0.08)":"rgba(0,0,0,0.01)",border:it?"1.5px solid rgba(91,155,213,0.25)":"1px solid rgba(0,0,0,0.02)",opacity:ic?1:0.25,transition:"all 0.2s"}}>
+              <div style={{fontSize:12,fontWeight:it?700:400,color:it?"#5B9BD5":"#4A5568",marginBottom:3}}>{d.getDate()}</div>
+              {sm>0&&<div style={{fontSize:9.5,color:"#5B9BD5",background:"rgba(91,155,213,0.08)",borderRadius:4,padding:"1px 4px",display:"inline-block",marginBottom:2}}>{mToHM(sm)}</div>}
+              {de.map((ev,ei)=><div key={ei} style={{fontSize:9.5,padding:"1px 4px",borderRadius:4,marginBottom:1,background:SUBJECTS[ev.subject]?.lightColor,color:SUBJECTS[ev.subject]?.color,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{ev.name}</div>)}
+              {ge.map((ev,ei)=><div key={`g${ei}`} style={{fontSize:9.5,padding:"1px 4px",borderRadius:4,marginBottom:1,background:SUBJECTS[ev.subject]?.lightColor,color:SUBJECTS[ev.subject]?.color,fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontStyle:"italic"}}>{ev.name} ({ev.weight}%)</div>)}
+            </div>;
+          })}
+        </div>
+      </Glass>
+      {/* Upcoming */}
+      <Glass style={{marginTop:16}}>
+        <div style={lbl}>Próximas evaluaciones</div>
+        {evs.filter(e=>e.date>=today()).sort((a,b)=>a.date.localeCompare(b.date)).length===0?<p style={{fontSize:13,color:"#B0B8C8"}}>Ninguna</p>:
+        evs.filter(e=>e.date>=today()).sort((a,b)=>a.date.localeCompare(b.date)).map(ev=>{
+          const d=daysUntil(ev.date);const s=SUBJECTS[ev.subject];
+          return <div key={ev.id} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,background:`${s?.color}06`,border:`1px solid ${s?.color}12`,marginBottom:8}}>
+            <div style={{width:10,height:10,borderRadius:5,background:s?.color,flexShrink:0}} />
+            <div style={{flex:1}}><div style={{fontSize:14,fontWeight:600,color:"#1F2937"}}>{ev.name}</div><div style={{fontSize:12,color:"#8892A4",marginTop:2}}>{s?.name} · {ev.type} · {fmtDate(ev.date)}</div></div>
+            <div style={{fontSize:12,fontWeight:600,color:d<=3?"#D96A6A":d<=7?"#E89840":"#5BAF6A",background:d<=3?"rgba(217,106,106,0.08)":d<=7?"rgba(232,152,64,0.08)":"rgba(91,175,106,0.08)",padding:"5px 12px",borderRadius:10}}>{d===0?"Hoy":d===1?"Mañana":`${d} días`}</div>
+            <button onClick={e=>{e.stopPropagation();del(ev.id);}} style={{border:"none",background:"none",cursor:"pointer",color:"#C0C8D8",fontSize:15}}>×</button>
+          </div>;
+        })}
+      </Glass>
+      {show&&<Modal title="Nueva Evaluación" onClose={()=>setShow(false)}>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <input placeholder="Nombre" value={ef.name} onChange={e=>setEf({...ef,name:e.target.value})} style={inp}/>
+          <select value={ef.subject} onChange={e=>setEf({...ef,subject:e.target.value})} style={inp}>{Object.entries(SUBJECTS).map(([k,s])=><option key={k} value={k}>{s.name}</option>)}</select>
+          <select value={ef.type} onChange={e=>setEf({...ef,type:e.target.value})} style={inp}>{EVAL_TYPES.map(t=><option key={t} value={t}>{t}</option>)}</select>
+          <input type="date" value={ef.date} onChange={e=>setEf({...ef,date:e.target.value})} style={inp}/>
+          <div style={{display:"flex",gap:8,marginTop:4}}><button onClick={add} style={{...btnP(),flex:1}}>Guardar</button><button onClick={()=>setShow(false)} style={btnG()}>Cancelar</button></div>
+        </div>
+      </Modal>}
+    </div>
+  );
+}
+
+// ==================== TASKS ====================
+function TasksView({data,upd}) {
+  const [fil,setFil]=useState("pending");const [sf,setSF]=useState("all");const [show,setShow]=useState(false);
+  const [tf,setTF]=useState({name:"",subject:"etica",dueDate:"",estimatedHours:"",description:""});
+  const tasks=data.tasks||[];
+  const add=()=>{if(!tf.name||!tf.dueDate)return;upd(d=>({...d,tasks:[...(d.tasks||[]),{...tf,id:Date.now(),completed:false,completedDate:null,actualMinutes:0}]}));setShow(false);setTF({name:"",subject:"etica",dueDate:"",estimatedHours:"",description:""});};
+  const tog=(id)=>upd(d=>({...d,tasks:(d.tasks||[]).map(t=>t.id===id?{...t,completed:!t.completed,completedDate:!t.completed?today():null}:t)}));
+  const del=(id)=>upd(d=>({...d,tasks:(d.tasks||[]).filter(t=>t.id!==id)}));
+  const filtered=tasks.filter(t=>fil==="all"||(fil==="pending"?!t.completed:t.completed)).filter(t=>sf==="all"||t.subject===sf).sort((a,b)=>{if(a.completed!==b.completed)return a.completed?1:-1;return getPriScore(b)-getPriScore(a);});
+  const urgent=tasks.filter(t=>!t.completed&&t.dueDate&&daysUntil(t.dueDate)<=3).sort((a,b)=>getPriScore(b)-getPriScore(a));
+
+  return (
+    <div>
+      <SectionHeader title="Tareas" subtitle={`${tasks.filter(t=>!t.completed).length} pendientes · ${tasks.filter(t=>t.completed).length} completadas`} right={<button onClick={()=>setShow(true)} style={btnP()}>+ Nueva tarea</button>} />
+      {urgent.length>0&&<Glass accent="#E89840" style={{marginBottom:16,padding:18}}>
+        <div style={{fontSize:11,fontWeight:600,color:"#E89840",letterSpacing:1.5,textTransform:"uppercase",marginBottom:6}}>Sugerencia del día</div>
+        <p style={{fontSize:13,color:"#6B7280",margin:0,lineHeight:1.6}}>Enfócate en <strong style={{color:SUBJECTS[urgent[0].subject]?.color}}>{urgent[0].name}</strong>{urgent[0].dueDate&&` (${daysUntil(urgent[0].dueDate)<=0?"vencida":`${daysUntil(urgent[0].dueDate)} días`})`}{urgent.length>1&&<>, luego <strong style={{color:SUBJECTS[urgent[1].subject]?.color}}>{urgent[1].name}</strong></>}</p>
+      </Glass>}
+      <div style={{display:"flex",gap:6,marginBottom:18,flexWrap:"wrap",alignItems:"center"}}>
+        <div style={{display:"flex",gap:4,background:"rgba(0,0,0,0.02)",borderRadius:12,padding:3}}>
+          {[["pending","Pendientes"],["completed","Completadas"],["all","Todas"]].map(([v,l])=>(
+            <button key={v} onClick={()=>setFil(v)} style={{padding:"7px 14px",borderRadius:10,border:"none",cursor:"pointer",background:fil===v?"rgba(255,255,255,0.9)":"transparent",boxShadow:fil===v?"0 1px 6px rgba(0,0,0,0.05)":"none",color:fil===v?"#5B9BD5":"#8892A4",fontSize:12,fontWeight:500,fontFamily:fontStack}}>{l}</button>
+          ))}
+        </div>
+        <div style={{width:1,height:20,background:"rgba(0,0,0,0.06)",margin:"0 4px"}} />
+        {Object.entries(SUBJECTS).map(([k,s])=>(
+          <button key={k} onClick={()=>setSF(sf===k?"all":k)} style={{width:20,height:20,borderRadius:10,border:sf===k?`2px solid ${s.color}`:"2px solid rgba(0,0,0,0.06)",cursor:"pointer",background:s.gradient,opacity:sf===k?1:0.35,transition:"all 0.2s",padding:0}} title={s.name}/>
+        ))}
+      </div>
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        {filtered.length===0?<Glass><p style={{textAlign:"center",color:"#B0B8C8",fontSize:13}}>Sin tareas</p></Glass>:
+        filtered.map(task=>{const s=SUBJECTS[task.subject];const d=task.dueDate?daysUntil(task.dueDate):null;const pri=!task.completed&&task.dueDate?getPriLabel(getPriScore(task)):null;
+          return <Glass key={task.id} accent={s?.color} style={{padding:16}}>
+            <div style={{display:"flex",alignItems:"flex-start",gap:12}}>
+              <button onClick={()=>tog(task.id)} style={{width:22,height:22,minWidth:22,borderRadius:7,marginTop:1,border:`2px solid ${task.completed?"#5BAF6A":s?.color}`,background:task.completed?"#5BAF6A":"transparent",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontSize:11}}>{task.completed?"✓":""}</button>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                  <span style={{fontSize:14,fontWeight:500,color:task.completed?"#B0B8C8":"#1F2937",textDecoration:task.completed?"line-through":"none"}}>{task.name}</span>
+                  <span style={{fontSize:10.5,padding:"2px 8px",borderRadius:6,background:`${s?.color}10`,color:s?.color,fontWeight:500}}>{s?.name}</span>
+                  {pri&&<span style={{fontSize:10.5,padding:"2px 8px",borderRadius:6,background:pri.bg,color:pri.color,fontWeight:600}}>{pri.text}</span>}
+                </div>
+                {task.description&&<p style={{fontSize:12,color:"#8892A4",margin:"4px 0 0"}}>{task.description}</p>}
+                <div style={{display:"flex",gap:12,marginTop:6,fontSize:12,color:"#B0B8C8",flexWrap:"wrap"}}>
+                  {task.dueDate&&!task.completed&&d!==null&&<span style={{color:d<=1?"#D96A6A":d<=3?"#E89840":"#8892A4",fontWeight:d<=3?600:400}}>{d<=0?"Vencida":d===1?"Queda 1 día":`Quedan ${d} días`}</span>}
+                  {task.estimatedHours&&<span>Est: {task.estimatedHours}h</span>}
+                  {task.actualMinutes>0&&<span>Real: {mToHM(task.actualMinutes)}</span>}
+                </div>
+              </div>
+              <button onClick={()=>del(task.id)} style={{border:"none",background:"none",cursor:"pointer",color:"#D0D8E8",fontSize:16,padding:4}}>×</button>
+            </div>
+          </Glass>;
+        })}
+      </div>
+      {show&&<Modal title="Nueva Tarea" onClose={()=>setShow(false)}>
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <input placeholder="Nombre" value={tf.name} onChange={e=>setTF({...tf,name:e.target.value})} style={inp}/>
+          <textarea placeholder="Descripción (opcional)" value={tf.description} onChange={e=>setTF({...tf,description:e.target.value})} style={{...inp,resize:"vertical",minHeight:60}}/>
+          <select value={tf.subject} onChange={e=>setTF({...tf,subject:e.target.value})} style={inp}>{Object.entries(SUBJECTS).map(([k,s])=><option key={k} value={k}>{s.name}</option>)}</select>
+          <div style={{display:"flex",gap:8}}>
+            <div style={{flex:1}}><label style={{fontSize:11,color:"#A0A8B8",marginBottom:4,display:"block"}}>Fecha límite</label><input type="date" value={tf.dueDate} onChange={e=>setTF({...tf,dueDate:e.target.value})} style={inp}/></div>
+            <div style={{flex:1}}><label style={{fontSize:11,color:"#A0A8B8",marginBottom:4,display:"block"}}>Horas estimadas</label><input type="number" step="0.5" min="0" value={tf.estimatedHours} onChange={e=>setTF({...tf,estimatedHours:e.target.value})} style={inp}/></div>
+          </div>
+          <div style={{display:"flex",gap:8,marginTop:4}}><button onClick={add} style={{...btnP(),flex:1}}>Crear tarea</button><button onClick={()=>setShow(false)} style={btnG()}>Cancelar</button></div>
+        </div>
+      </Modal>}
+    </div>
+  );
+}
+
+// ==================== TIME TRACKER ====================
+function TimeTracker({sessions,schedule,selectedDate}) {
+  const hours=Array.from({length:20},(_,i)=>i+5);
+  const blocks=sessions.map(s=>{
+    const sh=s.startHour??Math.floor((s.timestamp?new Date(s.timestamp).getHours()*60+new Date(s.timestamp).getMinutes()-s.minutes:480)/60);
+    const sm=s.startMinute??0;
+    return {subject:s.subject,startH:sh,startM:sm,duration:s.minutes,type:"study"};
+  });
+  const dow=new Date(selectedDate+"T12:00:00").getDay();
+  const dn={1:"Lunes",2:"Martes",3:"Miércoles",4:"Jueves",5:"Viernes"}[dow];
+  if(dn&&schedule?.[dn]) schedule[dn].forEach(c=>{const[sh,sm]=c.start.split(":").map(Number);const[eh,em]=c.end.split(":").map(Number);blocks.push({subject:c.subject,startH:sh,startM:sm,duration:(eh*60+em)-(sh*60+sm),type:"class"});});
+  const totalMins=hours.length*60;
+  return (
+    <div style={{position:"relative"}}>
+      <div style={{position:"relative",height:hours.length*36}}>
+        {hours.map((h,i)=><div key={h} style={{position:"absolute",top:i*36,left:0,right:0,height:36,display:"flex",alignItems:"flex-start"}}><div style={{width:36,fontSize:10,color:"#B0B8C8",textAlign:"right",paddingRight:8,fontVariantNumeric:"tabular-nums",flexShrink:0}}>{String(h).padStart(2,"0")}</div><div style={{flex:1,borderTop:"1px solid rgba(0,0,0,0.03)",height:"100%"}} /></div>)}
+        {blocks.map((b,i)=>{const s=SUBJECTS[b.subject];const top=((b.startH-5)*60+b.startM)/totalMins*hours.length*36;const height=Math.max(b.duration/totalMins*hours.length*36,14);const ic=b.type==="class";
+          return <div key={i} style={{position:"absolute",top:Math.max(0,top),left:44,right:8,height,background:ic?`repeating-linear-gradient(135deg,${s?.color}10,${s?.color}10 4px,${s?.color}06 4px,${s?.color}06 8px)`:`linear-gradient(135deg,${s?.color}25,${s?.color}15)`,border:`1px solid ${s?.color}${ic?"15":"30"}`,borderRadius:8,padding:"2px 8px",display:"flex",alignItems:"center",gap:6,overflow:"hidden"}}>
+            <div style={{width:4,height:"60%",borderRadius:2,background:s?.color,flexShrink:0,opacity:ic?0.5:1}} />
+            <div style={{fontSize:10,fontWeight:600,color:s?.color,whiteSpace:"nowrap",opacity:ic?0.6:1}}>{s?.name}{ic?" (clase)":""}</div>
+          </div>;
+        })}
+        {selectedDate===today()&&(()=>{const now=new Date();const cm=(now.getHours()-5)*60+now.getMinutes();const top=cm/totalMins*hours.length*36;if(top<0||top>hours.length*36)return null;return <div style={{position:"absolute",top,left:36,right:0,height:2,background:"#D96A6A",zIndex:2,borderRadius:1}}><div style={{position:"absolute",left:-3,top:-3,width:8,height:8,borderRadius:4,background:"#D96A6A"}} /></div>;})()}
+      </div>
+    </div>
+  );
+}
+
+// ==================== DAILY ====================
+function DailyView({data,upd}) {
+  const [sd,setSd]=useState(today());const log=data.dailyLogs?.[sd]||{};
+  const uLog=(k,v)=>upd(d=>({...d,dailyLogs:{...d.dailyLogs,[sd]:{...d.dailyLogs?.[sd],[k]:v}}}));
+  const sess=(data.pomodoroSessions||[]).filter(s=>s.date===sd);
+  const totM=sess.reduce((a,s)=>a+s.minutes,0);
+  const ct=(data.tasks||[]).filter(t=>t.completed&&t.completedDate===sd);
+  const sm={};sess.forEach(s=>{sm[s.subject]=(sm[s.subject]||0)+s.minutes;});
+  const nav=(o)=>{const d=new Date(sd+"T12:00:00");d.setDate(d.getDate()+o);setSd(localDateStr(d));};
+
+  return (
+    <div>
+      <SectionHeader title="Análisis Diario" />
+      <div style={{display:"flex",alignItems:"center",gap:14,marginBottom:24}}>
+        <button onClick={()=>nav(-1)} style={{border:"none",background:"none",cursor:"pointer",fontSize:18,color:"#5B9BD5"}}>‹</button>
+        <span style={{fontSize:15,fontWeight:500,color:"#1F2937",textTransform:"capitalize"}}>{fmtDate(sd)}</span>
+        <button onClick={()=>nav(1)} style={{border:"none",background:"none",cursor:"pointer",fontSize:18,color:"#5B9BD5"}}>›</button>
+        {sd!==today()&&<button onClick={()=>setSd(today())} style={btnG({padding:"4px 12px",fontSize:11})}>Hoy</button>}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 260px 1fr",gap:16}}>
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+          <Glass><div style={lbl}>Sueño</div><div style={{display:"flex",gap:12}}><div style={{flex:1}}><label style={{fontSize:11,color:"#B0B8C8",display:"block",marginBottom:4}}>Despertar</label><input type="time" value={log.wakeUp||""} onChange={e=>uLog("wakeUp",e.target.value)} style={inp}/></div><div style={{flex:1}}><label style={{fontSize:11,color:"#B0B8C8",display:"block",marginBottom:4}}>Dormir</label><input type="time" value={log.sleep||""} onChange={e=>uLog("sleep",e.target.value)} style={inp}/></div></div></Glass>
+          <Glass accent="#5B9BD5"><div style={lbl}>Estudio</div><div style={{fontSize:36,fontWeight:200,color:"#5B9BD5",marginBottom:12,letterSpacing:-1}}>{mToHM(totM)}</div>
+            {totM>0&&<><div style={{display:"flex",height:20,borderRadius:10,overflow:"hidden",background:"rgba(0,0,0,0.03)"}}>{Object.entries(sm).map(([s,m])=><div key={s} style={{width:`${m/totM*100}%`,background:SUBJECTS[s]?.gradient||SUBJECTS[s]?.color,minWidth:16}} />)}</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:10}}>{Object.entries(sm).map(([s,m])=><span key={s} style={{fontSize:11,padding:"3px 8px",borderRadius:8,background:`${SUBJECTS[s]?.color}10`,color:SUBJECTS[s]?.color,fontWeight:500}}>{SUBJECTS[s]?.name} · {mToHM(m)}</span>)}</div></>}
+          </Glass>
+          <Glass><div style={lbl}>Tareas completadas</div>{ct.length===0?<p style={{fontSize:13,color:"#B0B8C8"}}>Ninguna aún</p>:ct.map(t=><div key={t.id} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0"}}><div style={{width:8,height:8,borderRadius:4,background:SUBJECTS[t.subject]?.color}} /><span style={{fontSize:13,color:"#1F2937"}}>{t.name}</span></div>)}</Glass>
+        </div>
+        <Glass style={{padding:"20px 12px",overflow:"auto",maxHeight:"calc(100vh - 180px)"}}><div style={{...lbl,textAlign:"center"}}>Time Tracker</div><TimeTracker sessions={sess} schedule={data.schedule} selectedDate={sd} /></Glass>
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+          <Glass><div style={lbl}>Objetivo del día</div><input value={log.goal||""} onChange={e=>uLog("goal",e.target.value)} placeholder="Tu meta principal" style={inp}/></Glass>
+          <Glass><div style={lbl}>Estado de ánimo</div><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{MOODS.map(m=><button key={m.grade} onClick={()=>uLog("mood",m.grade)} style={{padding:"8px 10px",borderRadius:12,border:log.mood===m.grade?`2px solid ${m.color}`:"2px solid transparent",cursor:"pointer",background:log.mood===m.grade?`${m.color}14`:"rgba(0,0,0,0.015)",transition:"all 0.2s",display:"flex",flexDirection:"column",alignItems:"center",gap:3}}><span style={{fontSize:20}}>{m.emoji}</span><span style={{fontSize:10,fontWeight:600,color:m.color}}>{m.grade}</span></button>)}</div></Glass>
+          <Glass><div style={lbl}>Reflexión personal</div><textarea value={log.journal||""} onChange={e=>uLog("journal",e.target.value)} placeholder="¿Cómo fue tu día?" style={{...inp,minHeight:160,resize:"vertical",lineHeight:1.7}} /></Glass>
         </div>
       </div>
     </div>
   );
 }
 
-ReactDOM.render(<App/>, document.getElementById("root"));
+// ==================== GRADES VIEW ====================
+function GradesView({data,upd}) {
+  const [selSubj,setSelSubj]=useState("etica");
+  const grades=data.grades||{};
+  const subjGrades=grades[selSubj]||{evaluations:[],targetGrade:6.7};
+  const evs=subjGrades.evaluations||[];
+  const sc=SUBJECTS[selSubj]?.color||"#5B9BD5";
+
+  const updateGrades=(newEvs,target)=>{
+    upd(d=>({...d,grades:{...(d.grades||{}),[selSubj]:{evaluations:newEvs,targetGrade:target??subjGrades.targetGrade}}}));
+  };
+
+  const addEval=()=>{
+    const newEv={id:Date.now(),name:`Evaluación ${evs.length+1}`,type:"Solemne",weight:0,date:"",grade:null};
+    updateGrades([...evs,newEv]);
+  };
+  const updateEval=(id,field,val)=>{
+    updateGrades(evs.map(e=>e.id===id?{...e,[field]:val}:e));
+  };
+  const delEval=(id)=>updateGrades(evs.filter(e=>e.id!==id));
+  const setTarget=(v)=>updateGrades(evs,parseFloat(v)||6.7);
+
+  const totalWeight=evs.reduce((a,e)=>a+Number(e.weight||0),0);
+  const calc=calcNeededGrades(evs.map(e=>({...e,weight:Number(e.weight||0),grade:e.grade!=null&&e.grade!==""?Number(e.grade):null})),subjGrades.targetGrade);
+
+  return (
+    <div>
+      <SectionHeader title="Notas y Evaluaciones" subtitle="Control de notas por asignatura" />
+      {/* Subject selector */}
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:24}}>
+        {Object.entries(SUBJECTS).map(([k,s])=>(
+          <button key={k} onClick={()=>setSelSubj(k)} style={{padding:"10px 16px",borderRadius:14,border:selSubj===k?`2px solid ${s.color}`:"2px solid transparent",cursor:"pointer",background:selSubj===k?`${s.color}12`:"rgba(0,0,0,0.02)",fontSize:13,fontWeight:selSubj===k?600:400,color:selSubj===k?s.color:"#8892A4",transition:"all 0.25s",fontFamily:fontStack}}>{s.name}</button>
+        ))}
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 320px",gap:16}}>
+        {/* Evaluations list */}
+        <Glass accent={sc}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+            <div style={lbl}>Evaluaciones</div>
+            <button onClick={addEval} style={{...btnP(sc),padding:"8px 16px",fontSize:12}}>+ Evaluación</button>
+          </div>
+          {totalWeight!==100&&totalWeight>0&&<div style={{fontSize:12,color:"#E89840",background:"rgba(232,152,64,0.08)",padding:"8px 12px",borderRadius:10,marginBottom:12}}>Los porcentajes suman {totalWeight}% (deberían ser 100%)</div>}
+          {evs.length===0?<p style={{fontSize:13,color:"#B0B8C8"}}>Agrega evaluaciones para esta asignatura</p>:
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {evs.map(ev=>(
+              <div key={ev.id} style={{padding:14,borderRadius:14,background:"rgba(0,0,0,0.015)",border:"1px solid rgba(0,0,0,0.04)"}}>
+                <div style={{display:"flex",gap:8,marginBottom:8,alignItems:"center"}}>
+                  <input value={ev.name} onChange={e=>updateEval(ev.id,"name",e.target.value)} style={{...inp,fontWeight:600,flex:1}} placeholder="Nombre" />
+                  <button onClick={()=>delEval(ev.id)} style={{border:"none",background:"none",cursor:"pointer",color:"#C0C8D8",fontSize:16}}>×</button>
+                </div>
+                <div style={{display:"flex",gap:8}}>
+                  <div style={{flex:1}}>
+                    <label style={{fontSize:10,color:"#A0A8B8",display:"block",marginBottom:3}}>Tipo</label>
+                    <select value={ev.type} onChange={e=>updateEval(ev.id,"type",e.target.value)} style={{...inp,fontSize:12}}>{EVAL_TYPES.map(t=><option key={t} value={t}>{t}</option>)}</select>
+                  </div>
+                  <div style={{width:80}}>
+                    <label style={{fontSize:10,color:"#A0A8B8",display:"block",marginBottom:3}}>Peso %</label>
+                    <input type="number" min="0" max="100" value={ev.weight||""} onChange={e=>updateEval(ev.id,"weight",e.target.value)} style={{...inp,fontSize:12}} />
+                  </div>
+                  <div style={{width:80}}>
+                    <label style={{fontSize:10,color:"#A0A8B8",display:"block",marginBottom:3}}>Nota</label>
+                    <input type="number" min="1" max="7" step="0.1" value={ev.grade!=null?ev.grade:""} onChange={e=>updateEval(ev.id,"grade",e.target.value===""?null:e.target.value)} placeholder="—" style={{...inp,fontSize:12,fontWeight:600,color:sc}} />
+                  </div>
+                  <div style={{width:120}}>
+                    <label style={{fontSize:10,color:"#A0A8B8",display:"block",marginBottom:3}}>Fecha</label>
+                    <input type="date" value={ev.date||""} onChange={e=>updateEval(ev.id,"date",e.target.value)} style={{...inp,fontSize:12}} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>}
+        </Glass>
+
+        {/* Grade calculator */}
+        <div style={{display:"flex",flexDirection:"column",gap:16}}>
+          <Glass accent={sc}>
+            <div style={lbl}>Meta de nota final</div>
+            <div style={{display:"flex",alignItems:"center",gap:12}}>
+              <input type="number" min="1" max="7" step="0.1" value={subjGrades.targetGrade} onChange={e=>setTarget(e.target.value)} style={{...inp,fontSize:28,fontWeight:200,textAlign:"center",color:sc,width:100}} />
+              <span style={{fontSize:13,color:"#8892A4"}}>/ 7.0</span>
+            </div>
+          </Glass>
+
+          <Glass>
+            <div style={lbl}>Proyección</div>
+            {evs.length===0?<p style={{fontSize:13,color:"#B0B8C8"}}>Agrega evaluaciones para ver la proyección</p>:(
+              <div>
+                {calc.currentFinal!=null&&<div style={{marginBottom:12}}><span style={{fontSize:12,color:"#8892A4"}}>Promedio actual: </span><span style={{fontSize:20,fontWeight:300,color:sc}}>{calc.currentFinal}</span></div>}
+                {calc.needed!=null?(
+                  calc.impossible?(
+                    <div style={{padding:14,borderRadius:12,background:"rgba(217,106,106,0.06)",border:"1px solid rgba(217,106,106,0.15)"}}>
+                      <div style={{fontSize:13,fontWeight:600,color:"#D96A6A",marginBottom:4}}>Nota máxima alcanzable: {calc.possible}</div>
+                      <p style={{fontSize:12,color:"#8892A4",margin:0}}>Con nota 7.0 en todas las evaluaciones restantes, lo máximo posible es {calc.possible}</p>
+                    </div>
+                  ):(
+                    <div style={{padding:14,borderRadius:12,background:`${sc}06`,border:`1px solid ${sc}15`}}>
+                      <div style={{fontSize:13,fontWeight:600,color:sc,marginBottom:4}}>Necesitas promedio: {calc.needed}</div>
+                      <p style={{fontSize:12,color:"#8892A4",margin:0}}>En las evaluaciones restantes para lograr {subjGrades.targetGrade}</p>
+                    </div>
+                  )
+                ):(
+                  <div style={{padding:14,borderRadius:12,background:"rgba(91,175,106,0.06)"}}>
+                    <div style={{fontSize:13,fontWeight:600,color:"#5BAF6A"}}>Nota final: {calc.final}</div>
+                  </div>
+                )}
+                {/* Per-evaluation recommendation spread */}
+                {calc.remaining&&calc.remaining.length>0&&!calc.impossible&&(()=>{
+                  const target=calc.needed;
+                  const remaining=evs.filter(e=>e.grade==null||e.grade==="").map(e=>({...e,weight:Number(e.weight||0)}));
+                  const totalRemW=remaining.reduce((a,e)=>a+e.weight,0);
+                  // Distribute: weight each eval proportionally but suggest slightly higher on heavier evals
+                  const suggestions=remaining.map(e=>{
+                    const base=target;
+                    // Slight adjustment: heavier evals get slightly lower target (easier to hit), lighter ones slightly higher
+                    const weightRatio=totalRemW>0?e.weight/totalRemW:1/remaining.length;
+                    const adjusted=Math.min(7.0,Math.max(1.0,base+(0.5-weightRatio)*0.3));
+                    return {...e,suggested:Math.round(adjusted*10)/10};
+                  });
+                  // Verify: recalculate to make sure suggestions actually hit the target
+                  const earnedW=evs.filter(e=>e.grade!=null&&e.grade!=="").reduce((a,e)=>a+Number(e.weight||0),0);
+                  const earnedP=evs.filter(e=>e.grade!=null&&e.grade!=="").reduce((a,e)=>a+Number(e.grade)*Number(e.weight||0),0);
+                  return (
+                    <div style={{marginTop:12}}>
+                      <div style={{fontSize:11,fontWeight:600,color:"#A0A8B8",marginBottom:8,textTransform:"uppercase",letterSpacing:1}}>Sugerencia por evaluación</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                        {suggestions.map(s=>(
+                          <div key={s.id} style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",borderRadius:10,background:"rgba(0,0,0,0.015)"}}>
+                            <div style={{flex:1}}>
+                              <div style={{fontSize:12,fontWeight:500,color:"#1F2937"}}>{s.name}</div>
+                              <div style={{fontSize:10,color:"#A0A8B8"}}>{s.weight}% · {s.date?fmtDate(s.date):"Sin fecha"}</div>
+                            </div>
+                            <div style={{fontSize:16,fontWeight:600,color:s.suggested<=5.0?"#D96A6A":s.suggested<=6.0?"#E89840":sc}}>{s.suggested}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+          </Glass>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==================== STATS ====================
+function StatsView({data}) {
+  const [wo,setWO]=useState(0);
+  const sessions=data.pomodoroSessions||[];
+  const wd=getWeekDates(wo);
+  const weekData=wd.map(date=>{const ds=sessions.filter(s=>s.date===date);const bs={};ds.forEach(s=>{bs[s.subject]=(bs[s.subject]||0)+s.minutes;});return{date,total:ds.reduce((a,s)=>a+s.minutes,0),bySubject:bs};});
+  const maxW=Math.max(...weekData.map(d=>d.total),60);
+  const now=new Date();const monthDates=getMonthDates(now.getFullYear(),now.getMonth());
+  const totalMin=sessions.reduce((a,s)=>a+s.minutes,0);
+  const uniqueDays=new Set(sessions.map(s=>s.date)).size;
+  const avgPD=uniqueDays>0?Math.round(totalMin/uniqueDays):0;
+  const streak=(()=>{let c=0;const d=new Date();while(sessions.some(s=>s.date===localDateStr(d))){c++;d.setDate(d.getDate()-1);}return c;})();
+  const subjTotals={};sessions.forEach(s=>{subjTotals[s.subject]=(subjTotals[s.subject]||0)+s.minutes;});
+
+  // Focus stats
+  const focusedCount=sessions.filter(s=>s.focused==="focused").length;
+  const distractedCount=sessions.filter(s=>s.focused==="distracted").length;
+  const totalRated=focusedCount+distractedCount;
+  const focusPct=totalRated>0?Math.round(focusedCount/totalRated*100):0;
+
+  // Mood monthly stats
+  const monthLogs=Object.entries(data.dailyLogs||{}).filter(([d])=>{const dt=new Date(d+"T12:00:00");return dt.getMonth()===now.getMonth()&&dt.getFullYear()===now.getFullYear();});
+  const moodCounts={};monthLogs.forEach(([,l])=>{if(l.mood)moodCounts[l.mood]=(moodCounts[l.mood]||0)+1;});
+
+  return (
+    <div>
+      <SectionHeader title="Estadísticas" subtitle="Tu progreso de estudio" />
+      <div style={{display:"grid",gridTemplateColumns:"repeat(5, 1fr)",gap:12,marginBottom:24}}>
+        {[
+          {label:"Total",value:mToHM(totalMin),color:"#5B9BD5"},
+          {label:"Días activos",value:uniqueDays,color:"#5BAF6A"},
+          {label:"Promedio / día",value:mToHM(avgPD),color:"#E89840"},
+          {label:"Racha",value:`${streak} días`,color:"#D96A6A"},
+          {label:"Enfoque",value:`${focusPct}%`,color:"#8B6AD9"},
+        ].map(s=>(
+          <Glass key={s.label} accent={s.color} style={{textAlign:"center",padding:18}}>
+            <div style={{fontSize:26,fontWeight:200,color:s.color,letterSpacing:-1}}>{s.value}</div>
+            <div style={{fontSize:10,color:"#A0A8B8",marginTop:6,letterSpacing:0.5,textTransform:"uppercase"}}>{s.label}</div>
+          </Glass>
+        ))}
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+        {/* Weekly chart */}
+        <Glass>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
+            <div style={lbl}>Semanal</div>
+            <div style={{display:"flex",gap:6,alignItems:"center"}}>
+              <button onClick={()=>setWO(prev=>prev-1)} style={{border:"none",background:"none",cursor:"pointer",color:"#5B9BD5",fontSize:16,padding:"4px 8px"}}>‹</button>
+              <button onClick={()=>setWO(0)} style={btnG({padding:"2px 8px",fontSize:10})}>Hoy</button>
+              <button onClick={()=>setWO(prev=>prev+1)} style={{border:"none",background:"none",cursor:"pointer",color:"#5B9BD5",fontSize:16,padding:"4px 8px"}}>›</button>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:8,height:170,alignItems:"flex-end"}}>
+            {weekData.map((day,i)=>{
+              const dn=new Date(day.date+"T12:00:00").toLocaleDateString("es-CL",{weekday:"narrow"});
+              const isT=day.date===today();
+              const barHeight=maxW>0&&day.total>0?Math.max(Math.round((day.total/maxW)*140),8):4;
+              return (
+                <div key={day.date} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"flex-end"}}>
+                  <span style={{fontSize:10,color:"#B0B8C8",fontVariantNumeric:"tabular-nums",marginBottom:4,height:16}}>{day.total>0?mToHM(day.total):""}</span>
+                  <div style={{width:"80%",height:barHeight,borderRadius:8,overflow:"hidden",display:"flex",flexDirection:"column-reverse"}}>
+                    {Object.entries(day.bySubject).map(([subj,mins])=>(
+                      <div key={subj} style={{height:day.total>0?`${(mins/day.total)*100}%`:"0%",background:SUBJECTS[subj]?.gradient||SUBJECTS[subj]?.color,minHeight:mins>0?3:0}} />
+                    ))}
+                    {day.total===0&&<div style={{height:"100%",background:"rgba(0,0,0,0.03)"}} />}
+                  </div>
+                  <span style={{fontSize:11,fontWeight:isT?700:400,color:isT?"#5B9BD5":"#8892A4",marginTop:4}}>{dn}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:12,paddingTop:10,borderTop:"1px solid rgba(0,0,0,0.04)"}}>
+            {Object.entries(SUBJECTS).map(([k,s])=><div key={k} style={{display:"flex",alignItems:"center",gap:4,fontSize:10,color:"#8892A4"}}><div style={{width:8,height:8,borderRadius:3,background:s.color}} />{s.name}</div>)}
+          </div>
+        </Glass>
+
+        {/* Heatmap */}
+        <Glass>
+          <div style={lbl}>{now.toLocaleDateString("es-CL",{month:"long"})}</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4}}>
+            {["L","M","X","J","V","S","D"].map(d=><div key={d} style={{textAlign:"center",fontSize:10,fontWeight:600,color:"#C0C8D8",padding:3}}>{d}</div>)}
+            {monthDates.map((date,i)=>{const d=new Date(date+"T12:00:00");const ic=d.getMonth()===now.getMonth();const mins=sessions.filter(s=>s.date===date).reduce((a,s)=>a+s.minutes,0);const int=Math.min(mins/240,1);const isT=date===today();
+              return <div key={i} style={{aspectRatio:"1",borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:isT?700:400,background:!ic?"transparent":mins>0?`rgba(91,155,213,${0.08+int*0.65})`:"rgba(0,0,0,0.015)",color:!ic?"transparent":mins>0&&int>0.4?"#fff":isT?"#5B9BD5":"#8892A4",border:isT?"1.5px solid #5B9BD5":"none"}}>{ic?d.getDate():""}</div>;
+            })}
+          </div>
+        </Glass>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginTop:16}}>
+        {/* Focus vs distracted */}
+        <Glass>
+          <div style={lbl}>Enfoque vs Distracción</div>
+          {totalRated===0?<p style={{fontSize:13,color:"#B0B8C8"}}>Completa reflexiones post-pomodoro para ver datos</p>:(
+            <div>
+              <div style={{display:"flex",height:24,borderRadius:12,overflow:"hidden",marginBottom:12}}>
+                <div style={{width:`${focusPct}%`,background:"linear-gradient(135deg,#5BAF6A,#7DD08E)",transition:"width 0.5s"}} />
+                <div style={{width:`${100-focusPct}%`,background:"linear-gradient(135deg,#E89840,#F0B860)",transition:"width 0.5s"}} />
+              </div>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:13}}>
+                <span style={{color:"#5BAF6A",fontWeight:600}}>Enfocado: {focusedCount} ({focusPct}%)</span>
+                <span style={{color:"#E89840",fontWeight:600}}>Distraído: {distractedCount} ({100-focusPct}%)</span>
+              </div>
+            </div>
+          )}
+        </Glass>
+
+        {/* Monthly mood */}
+        <Glass>
+          <div style={lbl}>Ánimo del mes</div>
+          {Object.keys(moodCounts).length===0?<p style={{fontSize:13,color:"#B0B8C8"}}>Registra tu ánimo diario para ver datos</p>:(
+            <div style={{display:"flex",gap:8,alignItems:"flex-end",height:100}}>
+              {MOODS.map(m=>{const ct=moodCounts[m.grade]||0;const maxCt=Math.max(...Object.values(moodCounts),1);
+                return <div key={m.grade} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                  {ct>0&&<span style={{fontSize:10,color:"#8892A4"}}>{ct}</span>}
+                  <div style={{width:"100%",height:Math.max(ct/maxCt*60,ct>0?8:2),borderRadius:6,background:ct>0?m.color:"rgba(0,0,0,0.03)",transition:"height 0.5s"}} />
+                  <span style={{fontSize:14}}>{m.emoji}</span>
+                </div>;
+              })}
+            </div>
+          )}
+        </Glass>
+      </div>
+
+      {/* Subject breakdown */}
+      <Glass style={{marginTop:16}}>
+        <div style={lbl}>Por asignatura</div>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {Object.entries(subjTotals).sort((a,b)=>b[1]-a[1]).map(([subj,mins])=>{const s=SUBJECTS[subj];const pct=totalMin>0?(mins/totalMin)*100:0;
+            return <div key={subj}><div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:13,fontWeight:500,color:"#1F2937"}}>{s?.name}</span><span style={{fontSize:12,color:"#8892A4"}}>{mToHM(mins)} ({Math.round(pct)}%)</span></div><div style={{height:8,borderRadius:4,background:"rgba(0,0,0,0.03)",overflow:"hidden"}}><div style={{height:"100%",width:`${pct}%`,background:s?.gradient||s?.color,borderRadius:4,transition:"width 0.5s"}} /></div></div>;
+          })}
+          {Object.keys(subjTotals).length===0&&<p style={{fontSize:13,color:"#B0B8C8"}}>Completa pomodoros para ver estadísticas</p>}
+        </div>
+      </Glass>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(StudyTracker));
 </script>
 </body>
 </html>
